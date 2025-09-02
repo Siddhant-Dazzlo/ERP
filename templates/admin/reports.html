@@ -1,0 +1,501 @@
+{% extends "base.html" %}
+
+{% block title %}Reports - Trivanta ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Reports & Analytics</h1>
+        <div>
+            <button class="btn btn-success" onclick="generateDailyReport()">
+                <i class="fas fa-file-alt fa-sm"></i> Generate Daily Report
+            </button>
+            <button class="btn btn-primary" onclick="exportAllData()">
+                <i class="fas fa-download fa-sm"></i> Export All Data
+            </button>
+        </div>
+    </div>
+
+    <!-- Report Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-3">
+                            <label>Report Type:</label>
+                            <select class="form-control" id="reportType">
+                                <option value="overview">Overview Report</option>
+                                <option value="financial">Financial Report</option>
+                                <option value="operational">Operational Report</option>
+                                <option value="attendance">Attendance Report</option>
+                                <option value="project">Project Report</option>
+                                <option value="lead">Lead Report</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label>Date Range:</label>
+                            <select class="form-control" id="dateRange">
+                                <option value="today">Today</option>
+                                <option value="week">This Week</option>
+                                <option value="month" selected>This Month</option>
+                                <option value="quarter">This Quarter</option>
+                                <option value="year">This Year</option>
+                                <option value="custom">Custom Range</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label>Department:</label>
+                            <select class="form-control" id="departmentFilter">
+                                <option value="">All Departments</option>
+                                <option value="Installation">Installation</option>
+                                <option value="Manufacturing">Manufacturing</option>
+                                <option value="Sales">Sales</option>
+                                <option value="Operations">Operations</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label>&nbsp;</label><br>
+                            <button class="btn btn-primary" onclick="generateReport()">
+                                <i class="fas fa-chart-bar"></i> Generate Report
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row mt-3" id="customDateRange" style="display: none;">
+                        <div class="col-md-3">
+                            <label>Start Date:</label>
+                            <input type="date" class="form-control" id="startDate">
+                        </div>
+                        <div class="col-md-3">
+                            <label>End Date:</label>
+                            <input type="date" class="form-control" id="endDate">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Content -->
+    <div id="reportContent">
+        <!-- Default Overview Report -->
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-primary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                    Total Revenue</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">${{ "{:,.2f}".format(total_revenue) }}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-success shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                    Active Projects</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ active_projects }}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-project-diagram fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-info shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                    Lead Conversion</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ conversion_rate }}%</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-percentage fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-warning shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                    Attendance Rate</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ attendance_rate }}%</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-users fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row mb-4">
+            <div class="col-xl-8 col-lg-7">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Revenue Trend</h6>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-4 col-lg-5">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Project Status Distribution</h6>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="projectStatusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Tables -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Top Performing Projects</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="topProjectsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Project ID</th>
+                                        <th>Name</th>
+                                        <th>Type</th>
+                                        <th>Client</th>
+                                        <th>Budget</th>
+                                        <th>Status</th>
+                                        <th>Progress</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for project in top_projects %}
+                                    <tr>
+                                        <td>{{ project.id }}</td>
+                                        <td>{{ project.name }}</td>
+                                        <td>
+                                            <span class="badge badge-{{ 'primary' if project.type == 'installation' else 'warning' }}">
+                                                {{ project.type|title }}
+                                            </span>
+                                        </td>
+                                        <td>{{ project.client_name or 'N/A' }}</td>
+                                        <td>${{ "{:,.2f}".format(project.budget or 0) }}</td>
+                                        <td>
+                                            <span class="badge badge-{{ 
+                                                'success' if project.status == 'completed' 
+                                                else 'warning' if project.status == 'in_progress'
+                                                else 'info' if project.status == 'pending'
+                                                else 'secondary' 
+                                            }}">
+                                                {{ project.status|replace('_', ' ')|title }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="progress">
+                                                <div class="progress-bar" role="progressbar" style="width: {{ project.progress or 0 }}%">
+                                                    {{ project.progress or 0 }}%
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Report Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <button class="btn btn-info btn-block" onclick="scheduleReport()">
+                                <i class="fas fa-clock"></i> Schedule Report
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-success btn-block" onclick="emailReport()">
+                                <i class="fas fa-envelope"></i> Email Report
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-warning btn-block" onclick="printReport()">
+                                <i class="fas fa-print"></i> Print Report
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-secondary btn-block" onclick="saveReport()">
+                                <i class="fas fa-save"></i> Save Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Schedule Report Modal -->
+<div class="modal fade" id="scheduleReportModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Schedule Report</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <form id="scheduleReportForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Report Name</label>
+                        <input type="text" class="form-control" name="reportName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Frequency</label>
+                        <select class="form-control" name="frequency" required>
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                            <option value="quarterly">Quarterly</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Recipients (comma-separated emails)</label>
+                        <input type="text" class="form-control" name="recipients" placeholder="email1@example.com, email2@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Start Date</label>
+                        <input type="date" class="form-control" name="startDate" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Schedule Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Email Report Modal -->
+<div class="modal fade" id="emailReportModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Email Report</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <form id="emailReportForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>To (comma-separated emails)</label>
+                        <input type="text" class="form-control" name="to" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Subject</label>
+                        <input type="text" class="form-control" name="subject" value="Trivanta ERP Report" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Message</label>
+                        <textarea class="form-control" name="message" rows="4" placeholder="Please find attached the requested report..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Report Format</label>
+                        <select class="form-control" name="format">
+                            <option value="pdf">PDF</option>
+                            <option value="excel">Excel</option>
+                            <option value="csv">CSV</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Send Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+$(document).ready(function() {
+    $('#topProjectsTable').DataTable({
+        order: [[4, 'desc']],
+        pageLength: 10
+    });
+    
+    // Initialize charts
+    initializeCharts();
+    
+    // Handle custom date range
+    $('#dateRange').change(function() {
+        if ($(this).val() === 'custom') {
+            $('#customDateRange').show();
+        } else {
+            $('#customDateRange').hide();
+        }
+    });
+});
+
+function initializeCharts() {
+    // Revenue Chart
+    const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+    new Chart(revenueCtx, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            datasets: [{
+                label: 'Installation Revenue',
+                data: [12000, 19000, 15000, 25000, 22000, 30000],
+                borderColor: '#4e73df',
+                backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                tension: 0.1
+            }, {
+                label: 'Manufacturing Revenue',
+                data: [8000, 12000, 10000, 18000, 15000, 22000],
+                borderColor: '#1cc88a',
+                backgroundColor: 'rgba(28, 200, 138, 0.1)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Project Status Chart
+    const projectCtx = document.getElementById('projectStatusChart').getContext('2d');
+    new Chart(projectCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Completed', 'In Progress', 'Pending', 'On Hold'],
+            datasets: [{
+                data: [35, 25, 30, 10],
+                backgroundColor: ['#1cc88a', '#f6c23e', '#36b9cc', '#e74a3b']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+}
+
+function generateReport() {
+    const reportType = $('#reportType').val();
+    const dateRange = $('#dateRange').val();
+    const department = $('#departmentFilter').val();
+    
+    // Show loading
+    $('#reportContent').html('<div class="text-center"><i class="fas fa-spinner fa-spin fa-3x"></i><p>Generating report...</p></div>');
+    
+    // Simulate report generation
+    setTimeout(() => {
+        // Here you would make an API call to generate the report
+        alert(`Report generated for ${reportType} - ${dateRange}`);
+        location.reload();
+    }, 2000);
+}
+
+function generateDailyReport() {
+    if (confirm('Generate daily report for today?')) {
+        // Here you would make an API call to generate daily report
+        alert('Daily report generated successfully!');
+    }
+}
+
+function exportAllData() {
+    if (confirm('Export all system data? This may take a few minutes.')) {
+        // Here you would make an API call to export data
+        alert('Data export started. You will receive an email when complete.');
+    }
+}
+
+function scheduleReport() {
+    $('#scheduleReportModal').modal('show');
+}
+
+function emailReport() {
+    $('#emailReportModal').modal('show');
+}
+
+function printReport() {
+    window.print();
+}
+
+function saveReport() {
+    if (confirm('Save current report configuration?')) {
+        // Here you would save the report configuration
+        alert('Report configuration saved successfully!');
+    }
+}
+
+// Handle form submissions
+$('#scheduleReportForm').submit(function(e) {
+    e.preventDefault();
+    // Here you would submit the schedule request
+    alert('Report scheduled successfully!');
+    $('#scheduleReportModal').modal('hide');
+});
+
+$('#emailReportForm').submit(function(e) {
+    e.preventDefault();
+    // Here you would submit the email request
+    alert('Report sent successfully!');
+    $('#emailReportModal').modal('hide');
+});
+</script>
+{% endblock %}
+

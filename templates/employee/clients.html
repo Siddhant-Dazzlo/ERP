@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+
+{% block title %}Clients - Employee Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">Client Management</h1>
+                <a href="{{ url_for('employee.create_client') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>
+                    Add New Client
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Client Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Total Clients</h6>
+                            <h3 class="mb-0">{{ clients|length }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-building fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Active</h6>
+                            <h3 class="mb-0">{{ clients|selectattr('status', 'equalto', 'active')|list|length }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Business Types</h6>
+                            <h3 class="mb-0">{{ clients|map(attribute='business_type')|unique|list|length }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-tags fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">This Month</h6>
+                            <h3 class="mb-0">{{ clients|length }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-calendar fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" id="searchInput" placeholder="Search clients...">
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="businessTypeFilter">
+                                <option value="">All Business Types</option>
+                                <option value="technology">Technology</option>
+                                <option value="healthcare">Healthcare</option>
+                                <option value="finance">Finance</option>
+                                <option value="retail">Retail</option>
+                                <option value="manufacturing">Manufacturing</option>
+                                <option value="education">Education</option>
+                                <option value="consulting">Consulting</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="statusFilter">
+                                <option value="">All Statuses</option>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                                <option value="prospect">Prospect</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-outline-secondary w-100" id="resetFilters">
+                                <i class="fas fa-refresh me-2"></i>
+                                Reset
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Clients Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        Client Directory
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="clientsTable">
+                            <thead>
+                                <tr>
+                                    <th>Client</th>
+                                    <th>Company</th>
+                                    <th>Contact</th>
+                                    <th>Business Type</th>
+                                    <th>Status</th>
+                                    <th>Projects</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for client in clients %}
+                                <tr class="client-row" 
+                                    data-name="{{ client.name|lower }}" 
+                                    data-company="{{ client.company|lower if client.company else '' }}"
+                                    data-business-type="{{ client.business_type|lower if client.business_type else '' }}"
+                                    data-status="{{ client.status|lower if client.status else '' }}">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm bg-primary rounded-circle d-flex align-items-center justify-content-center me-3">
+                                                <span class="text-white fw-bold">{{ client.name[0]|upper }}</span>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold">{{ client.name }}</div>
+                                                <small class="text-muted">ID: {{ client.id }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold">{{ client.company or 'N/A' }}</span>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <div>{{ client.phone or 'N/A' }}</div>
+                                            <small class="text-muted">{{ client.email }}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark">{{ client.business_type or 'N/A' }}</span>
+                                    </td>
+                                    <td>
+                                        {% if client.status == 'active' %}
+                                            <span class="badge bg-success">Active</span>
+                                        {% elif client.status == 'inactive' %}
+                                            <span class="badge bg-secondary">Inactive</span>
+                                        {% elif client.status == 'prospect' %}
+                                            <span class="badge bg-info">Prospect</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ client.status|title or 'N/A' }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ client.projects|default(0) }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#clientModal{{ client.id }}">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <a href="#" class="btn btn-sm btn-outline-success">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-info">
+                                                <i class="fas fa-phone"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Client Detail Modal -->
+                                <div class="modal fade" id="clientModal{{ client.id }}" tabindex="-1">
+                                    <div class="modal-dialog modal-lg">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Client Details - {{ client.name }}</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <h6>Contact Information</h6>
+                                                        <p><strong>Name:</strong> {{ client.name }}</p>
+                                                        <p><strong>Email:</strong> {{ client.email }}</p>
+                                                        <p><strong>Phone:</strong> {{ client.phone or 'N/A' }}</p>
+                                                        <p><strong>Company:</strong> {{ client.company or 'N/A' }}</p>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <h6>Business Details</h6>
+                                                        <p><strong>Business Type:</strong> {{ client.business_type or 'N/A' }}</p>
+                                                        <p><strong>Status:</strong> 
+                                                            {% if client.status == 'active' %}
+                                                                <span class="badge bg-success">Active</span>
+                                                            {% elif client.status == 'inactive' %}
+                                                                <span class="badge bg-secondary">Inactive</span>
+                                                            {% elif client.status == 'prospect' %}
+                                                                <span class="badge bg-info">Prospect</span>
+                                                            {% else %}
+                                                                <span class="badge bg-secondary">{{ client.status|title or 'N/A' }}</span>
+                                                            {% endif %}
+                                                        </p>
+                                                        <p><strong>Address:</strong> {{ client.address or 'N/A' }}</p>
+                                                        <p><strong>Projects:</strong> {{ client.projects|default(0) }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                <a href="#" class="btn btn-primary">Edit Client</a>
+                                                <button type="button" class="btn btn-success">View Projects</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted py-4">
+                                        <i class="fas fa-inbox fa-2x mb-3"></i>
+                                        <p>No clients found</p>
+                                        <a href="{{ url_for('employee.create_client') }}" class="btn btn-primary">
+                                            <i class="fas fa-plus me-2"></i>
+                                            Add Your First Client
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Search and filter functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const businessTypeFilter = document.getElementById('businessTypeFilter');
+    const statusFilter = document.getElementById('statusFilter');
+    const resetFilters = document.getElementById('resetFilters');
+    const clientRows = document.querySelectorAll('.client-row');
+    
+    function filterClients() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const businessType = businessTypeFilter.value.toLowerCase();
+        const status = statusFilter.value.toLowerCase();
+        
+        clientRows.forEach(row => {
+            const name = row.dataset.name;
+            const company = row.dataset.company;
+            const businessTypeData = row.dataset.businessType;
+            const statusData = row.dataset.status;
+            
+            const matchesSearch = name.includes(searchTerm) || company.includes(searchTerm);
+            const matchesBusinessType = !businessType || businessTypeData === businessType;
+            const matchesStatus = !status || statusData === status;
+            
+            if (matchesSearch && matchesBusinessType && matchesStatus) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+    
+    searchInput.addEventListener('input', filterClients);
+    businessTypeFilter.addEventListener('change', filterClients);
+    statusFilter.addEventListener('change', filterClients);
+    
+    resetFilters.addEventListener('click', function() {
+        searchInput.value = '';
+        businessTypeFilter.value = '';
+        statusFilter.value = '';
+        filterClients();
+    });
+});
+</script>
+{% endblock %}
+

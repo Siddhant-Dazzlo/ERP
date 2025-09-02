@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Trivanta Edge ERP</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+        }
+        .content {
+            background: #f9f9f9;
+            padding: 30px;
+            border-radius: 0 0 10px 10px;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Welcome to Trivanta Edge ERP</h1>
+        <p>Your comprehensive business management solution</p>
+    </div>
+    
+    <div class="content">
+        <h2>Hello {{ user_name }},</h2>
+        
+        <p>Welcome to Trivanta Edge ERP! We're excited to have you on board as a <strong>{{ role }}</strong>.</p>
+        
+        <p>Trivanta Edge ERP is designed to streamline your business operations, from project management to client relations, all in one integrated platform.</p>
+        
+        <h3>What you can do:</h3>
+        <ul>
+            <li>Manage projects and track progress</li>
+            <li>Handle client relationships</li>
+            <li>Track attendance and performance</li>
+            <li>Generate reports and analytics</li>
+            <li>Collaborate with your team</li>
+        </ul>
+        
+        <p><strong>Ready to get started?</strong></p>
+        
+        <a href="{{ login_url }}" class="button">Login to Your Account</a>
+        
+        <p>If you have any questions or need assistance, please don't hesitate to contact our support team at <a href="mailto:{{ support_email }}">{{ support_email }}</a>.</p>
+        
+        <p>Best regards,<br>
+        The Trivanta Edge ERP Team</p>
+    </div>
+    
+    <div class="footer">
+        <p>This email was sent to you as part of your Trivanta Edge ERP account setup.</p>
+        <p>&copy; 2024 Trivanta Edge ERP. All rights reserved.</p>
+    </div>
+</body>
+</html>

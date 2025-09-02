@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %}Create Project - Manager Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="{{ url_for('manager.dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('manager.projects') }}">Projects</a></li>
+                        <li class="breadcrumb-item active">Create Project</li>
+                    </ol>
+                </div>
+                <h4 class="page-title">Create New Project</h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="header-title">Project Information</h4>
+                    <p class="text-muted mb-0">Fill in the details to create a new project</p>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">Project Name <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="name" name="name" required placeholder="Enter project name">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="type" class="form-label">Project Type <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="type" name="type" required>
+                                        <option value="">Select Project Type</option>
+                                        <option value="installation">Installation</option>
+                                        <option value="manufacturing">Manufacturing</option>
+                                        <option value="both">Both</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="client_id" class="form-label">Client <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="client_id" name="client_id" required>
+                                        <option value="">Select Client</option>
+                                        {% for client in clients %}
+                                        <option value="{{ client.id }}">{{ client.name }} - {{ client.company }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="budget" class="form-label">Budget <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" id="budget" name="budget" required min="0" step="0.01" placeholder="0.00">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="start_date" class="form-label">Start Date <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" id="start_date" name="start_date" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="end_date" class="form-label">End Date</label>
+                                    <input type="date" class="form-control" id="end_date" name="end_date">
+                                    <small class="form-text text-muted">Leave blank if end date is not determined</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Project Description <span class="text-danger">*</span></label>
+                                    <textarea class="form-control" id="description" name="description" rows="4" required placeholder="Describe the project scope, objectives, and deliverables"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label for="assigned_employees" class="form-label">Assign Employees</label>
+                                    <select class="form-select" id="assigned_employees" name="assigned_employees" multiple>
+                                        {% for employee in employees %}
+                                        <option value="{{ employee.id }}">{{ employee.name }} - {{ employee.department }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <small class="form-text text-muted">Hold Ctrl/Cmd to select multiple employees</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="priority" class="form-label">Priority</label>
+                                    <select class="form-select" id="priority" name="priority">
+                                        <option value="low">Low</option>
+                                        <option value="medium" selected>Medium</option>
+                                        <option value="high">High</option>
+                                        <option value="urgent">Urgent</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="status" class="form-label">Initial Status</label>
+                                    <select class="form-select" id="status" name="status">
+                                        <option value="pending" selected>Pending</option>
+                                        <option value="planning">Planning</option>
+                                        <option value="in_progress">In Progress</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-end">
+                            <a href="{{ url_for('manager.projects') }}" class="btn btn-secondary me-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Create Project</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Set minimum start date to today
+    const today = new Date().toISOString().split('T')[0];
+    $('#start_date').attr('min', today);
+    
+    // Update end date minimum when start date changes
+    $('#start_date').on('change', function() {
+        $('#end_date').attr('min', $(this).val());
+    });
+    
+    // Form validation
+    $('form').on('submit', function(e) {
+        let isValid = true;
+        
+        // Check required fields
+        $('input[required], select[required], textarea[required]').each(function() {
+            if (!$(this).val()) {
+                $(this).addClass('is-invalid');
+                isValid = false;
+            } else {
+                $(this).removeClass('is-invalid');
+            }
+        });
+        
+        // Validate dates
+        const startDate = $('#start_date').val();
+        const endDate = $('#end_date').val();
+        
+        if (startDate && endDate && startDate > endDate) {
+            $('#end_date').addClass('is-invalid');
+            isValid = false;
+        }
+        
+        // Validate budget
+        const budget = parseFloat($('#budget').val());
+        if (budget < 0) {
+            $('#budget').addClass('is-invalid');
+            isValid = false;
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+            showAlert('Please fill in all required fields correctly.', 'error');
+        }
+    });
+    
+    // Real-time validation
+    $('input, select, textarea').on('blur', function() {
+        if ($(this).hasClass('required') && !$(this).val()) {
+            $(this).addClass('is-invalid');
+        } else {
+            $(this).removeClass('is-invalid');
+        }
+    });
+    
+    // Initialize select2 for better UX
+    if ($.fn.select2) {
+        $('#assigned_employees').select2({
+            placeholder: 'Select employees to assign',
+            allowClear: true
+        });
+    }
+});
+</script>
+{% endblock %}
+

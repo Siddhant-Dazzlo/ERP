@@ -1,0 +1,28 @@
+Welcome to Trivanta Edge ERP
+Your comprehensive business management solution
+
+Hello {{ user_name }},
+
+Welcome to Trivanta Edge ERP! We're excited to have you on board as a {{ role }}.
+
+Trivanta Edge ERP is designed to streamline your business operations, from project management to client relations, all in one integrated platform.
+
+What you can do:
+- Manage projects and track progress
+- Handle client relationships
+- Track attendance and performance
+- Generate reports and analytics
+- Collaborate with your team
+
+Ready to get started?
+
+Login to Your Account: {{ login_url }}
+
+If you have any questions or need assistance, please don't hesitate to contact our support team at {{ support_email }}.
+
+Best regards,
+The Trivanta Edge ERP Team
+
+---
+This email was sent to you as part of your Trivanta Edge ERP account setup.
+© 2024 Trivanta Edge ERP. All rights reserved.

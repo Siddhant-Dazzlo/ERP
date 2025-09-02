@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Setup 2FA - Trivanta Edge ERP{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+        <div>
+            <div class="mx-auto h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
+                <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                </svg>
+            </div>
+            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                Setup Two-Factor Authentication
+            </h2>
+            <p class="mt-2 text-center text-sm text-gray-600">
+                Enhance your account security with 2FA
+            </p>
+        </div>
+
+        {% if qr_code %}
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Step 1: Scan QR Code</h3>
+            <div class="text-center mb-4">
+                <img src="{{ qr_code }}" alt="QR Code" class="mx-auto border-2 border-gray-200 rounded">
+            </div>
+            <p class="text-sm text-gray-600 mb-4">
+                Scan this QR code with your authenticator app (Google Authenticator, Authy, etc.)
+            </p>
+            
+            <div class="bg-gray-50 p-4 rounded">
+                <h4 class="font-medium text-gray-900 mb-2">Manual Entry (if QR code doesn't work):</h4>
+                <p class="text-sm text-gray-600 font-mono">{{ totp_secret }}</p>
+            </div>
+
+            <form class="mt-6" method="POST">
+                <input type="hidden" name="action" value="verify">
+                <div class="mb-4">
+                    <label for="totp_token" class="block text-sm font-medium text-gray-700 mb-2">
+                        Step 2: Enter Verification Code
+                    </label>
+                    <input id="totp_token" name="totp_token" type="text" required 
+                           class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" 
+                           placeholder="Enter 6-digit code" maxlength="6" pattern="[0-9]{6}">
+                </div>
+
+                <button type="submit" 
+                        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Verify and Enable 2FA
+                </button>
+            </form>
+        </div>
+        {% else %}
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Setup Two-Factor Authentication</h3>
+            <p class="text-sm text-gray-600 mb-6">
+                Two-factor authentication adds an extra layer of security to your account. 
+                You'll need to enter a code from your authenticator app in addition to your password.
+            </p>
+
+            <form method="POST">
+                <input type="hidden" name="action" value="setup">
+                <button type="submit" 
+                        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Start Setup
+                </button>
+            </form>
+        </div>
+        {% endif %}
+
+        <div class="text-center">
+            <a href="{{ url_for('index') }}" class="text-sm text-blue-600 hover:text-blue-500">
+                Skip for now
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('totp_token')?.addEventListener('input', function(e) {
+    // Auto-submit when 6 digits are entered
+    if (e.target.value.length === 6) {
+        e.target.form.submit();
+    }
+});
+</script>
+{% endblock %}
+

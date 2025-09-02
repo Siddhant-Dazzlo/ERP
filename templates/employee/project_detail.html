@@ -1,0 +1,405 @@
+{% extends "base.html" %}
+
+{% block title %}Project Details - {{ project.name }} - Employee Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{{ url_for('employee.projects') }}">Projects</a></li>
+                            <li class="breadcrumb-item active">{{ project.name }}</li>
+                        </ol>
+                    </nav>
+                    <h1 class="h3 mb-0">{{ project.name }}</h1>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('employee.projects') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Back to Projects
+                    </a>
+                    <button class="btn btn-primary">
+                        <i class="fas fa-edit me-2"></i>
+                        Update Status
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Overview -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Project Overview
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Project ID</label>
+                            <div class="fw-bold">{{ project.id }}</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Status</label>
+                            <div>
+                                {% if project.status == 'completed' %}
+                                    <span class="badge bg-success fs-6">Completed</span>
+                                {% elif project.status == 'in_progress' %}
+                                    <span class="badge bg-warning fs-6">In Progress</span>
+                                {% elif project.status == 'pending' %}
+                                    <span class="badge bg-info fs-6">Pending</span>
+                                {% elif project.status == 'on_hold' %}
+                                    <span class="badge bg-secondary fs-6">On Hold</span>
+                                {% else %}
+                                    <span class="badge bg-secondary fs-6">{{ project.status|title }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Project Type</label>
+                            <div class="fw-bold">{{ project.type|title }}</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Priority</label>
+                            <div class="fw-bold">{{ project.priority|default('Medium') }}</div>
+                        </div>
+                    </div>
+                    
+                    {% if project.description %}
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Description</label>
+                        <div class="fw-bold">{{ project.description }}</div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Start Date</label>
+                            <div class="fw-bold">{{ project.start_date or 'Not set' }}</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">End Date</label>
+                            <div class="fw-bold">{{ project.end_date or 'Not set' }}</div>
+                        </div>
+                    </div>
+                    
+                    {% if project.budget %}
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Budget</label>
+                        <div class="fw-bold text-primary fs-5">${{ "{:,.2f}".format(project.budget) }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-users me-2"></i>
+                        Client Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if client %}
+                    <div class="text-center mb-3">
+                        <div class="avatar-lg bg-primary rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3">
+                            <span class="text-white fw-bold fs-1">{{ client.name[0]|upper }}</span>
+                        </div>
+                        <h6 class="fw-bold mb-1">{{ client.name }}</h6>
+                        <p class="text-muted mb-2">{{ client.company or 'Individual' }}</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Email</label>
+                        <div class="fw-bold">{{ client.email }}</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Phone</label>
+                        <div class="fw-bold">{{ client.phone or 'N/A' }}</div>
+                    </div>
+                    
+                    {% if client.business_type %}
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Business Type</label>
+                        <div class="fw-bold">{{ client.business_type|title }}</div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if client.address %}
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Address</label>
+                        <div class="fw-bold">{{ client.address }}</div>
+                    </div>
+                    {% endif %}
+                    {% else %}
+                    <div class="text-center text-muted py-3">
+                        <i class="fas fa-user-slash fa-2x mb-2"></i>
+                        <p>Client information not available</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Progress and Timeline -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Project Progress
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-bold">Overall Progress</span>
+                            <span class="text-primary fw-bold">75%</span>
+                        </div>
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: 75%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="h4 text-success mb-1">3</div>
+                            <small class="text-muted">Completed Tasks</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="h4 text-warning mb-1">2</div>
+                            <small class="text-muted">In Progress</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="h4 text-info mb-1">1</div>
+                            <small class="text-muted">Pending</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        Timeline
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">Project Started</h6>
+                                <small class="text-muted">{{ project.start_date or 'Date not set' }}</small>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-warning"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">Development Phase</h6>
+                                <small class="text-muted">In Progress</small>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-info"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">Testing Phase</h6>
+                                <small class="text-muted">Pending</small>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-secondary"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">Project Completion</h6>
+                                <small class="text-muted">{{ project.end_date or 'Date not set' }}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Tasks and Notes -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-tasks me-2"></i>
+                        Project Tasks
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Task</th>
+                                    <th>Status</th>
+                                    <th>Assigned To</th>
+                                    <th>Due Date</th>
+                                    <th>Progress</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Requirements Analysis</td>
+                                    <td><span class="badge bg-success">Completed</span></td>
+                                    <td>John Doe</td>
+                                    <td>2024-01-15</td>
+                                    <td>
+                                        <div class="progress" style="height: 6px;">
+                                            <div class="progress-bar bg-success" style="width: 100%"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Design Phase</td>
+                                    <td><span class="badge bg-success">Completed</span></td>
+                                    <td>Jane Smith</td>
+                                    <td>2024-01-20</td>
+                                    <td>
+                                        <div class="progress" style="height: 6px;">
+                                            <div class="progress-bar bg-success" style="width: 100%"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Development</td>
+                                    <td><span class="badge bg-warning">In Progress</span></td>
+                                    <td>Mike Johnson</td>
+                                    <td>2024-02-15</td>
+                                    <td>
+                                        <div class="progress" style="height: 6px;">
+                                            <div class="progress-bar bg-warning" style="width: 60%"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Testing</td>
+                                    <td><span class="badge bg-info">Pending</span></td>
+                                    <td>Sarah Wilson</td>
+                                    <td>2024-02-20</td>
+                                    <td>
+                                        <div class="progress" style="height: 6px;">
+                                            <div class="progress-bar bg-info" style="width: 0%"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-sticky-note me-2"></i>
+                        Project Notes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <textarea class="form-control" rows="4" placeholder="Add a note about this project..."></textarea>
+                        <div class="d-flex justify-content-end mt-2">
+                            <button class="btn btn-sm btn-primary">Add Note</button>
+                        </div>
+                    </div>
+                    
+                    <div class="notes-list">
+                        <div class="note-item border-bottom pb-2 mb-2">
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">2024-01-25 14:30</small>
+                                <span class="badge bg-light text-dark">John Doe</span>
+                            </div>
+                            <p class="mb-1">Client requested additional features for the dashboard module.</p>
+                        </div>
+                        
+                        <div class="note-item border-bottom pb-2 mb-2">
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">2024-01-20 10:15</small>
+                                <span class="badge bg-light text-dark">Jane Smith</span>
+                            </div>
+                            <p class="mb-1">Design mockups approved by client. Ready for development.</p>
+                        </div>
+                        
+                        <div class="note-item">
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">2024-01-15 09:00</small>
+                                <span class="badge bg-light text-dark">Project Manager</span>
+                            </div>
+                            <p class="mb-1">Project kickoff meeting completed. Team assigned and timeline set.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -35px;
+    top: 5px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.timeline-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: -29px;
+    top: 17px;
+    width: 2px;
+    height: 30px;
+    background-color: #e9ecef;
+}
+
+.timeline-content h6 {
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+}
+
+.notes-list .note-item:last-child {
+    border-bottom: none !important;
+}
+</style>
+{% endblock %}
+

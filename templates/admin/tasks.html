@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Management - Trivanta Edge ERP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.10.24/css/dataTables.bootstrap4.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/buttons/2.0.1/css/buttons.bootstrap4.min.css" rel="stylesheet">
+    <style>
+        .task-card {
+            transition: transform 0.2s;
+            border-left: 4px solid #007bff;
+        }
+        .task-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .task-priority-high { border-left-color: #dc3545; }
+        .task-priority-medium { border-left-color: #ffc107; }
+        .task-priority-low { border-left-color: #28a745; }
+        .task-status-pending { background-color: #f8f9fa; }
+        .task-status-in-progress { background-color: #e3f2fd; }
+        .task-status-completed { background-color: #e8f5e8; }
+        .task-status-overdue { background-color: #ffebee; }
+        .kanban-column {
+            min-height: 500px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .kanban-task {
+            background: white;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            cursor: move;
+        }
+        .progress-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+        .filter-tag {
+            background-color: #e9ecef;
+            border-radius: 20px;
+            padding: 5px 15px;
+            margin: 5px;
+            display: inline-block;
+            cursor: pointer;
+        }
+        .filter-tag.active {
+            background-color: #007bff;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    {% extends "base.html" %}
+    {% block content %}
+    
+    <div class="container-fluid mt-4">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-0 text-gray-800">
+                    <i class="fas fa-tasks text-primary"></i> Task Management
+                </h1>
+                <p class="text-muted">Manage and track all tasks across projects and departments</p>
+            </div>
+            <div>
+                <button class="btn btn-primary" data-toggle="modal" data-target="#createTaskModal">
+                    <i class="fas fa-plus"></i> Create Task
+                </button>
+                <button class="btn btn-outline-secondary" onclick="exportTasks()">
+                    <i class="fas fa-download"></i> Export
+                </button>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-primary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Tasks</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalTasks">0</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-tasks fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-success shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Completed</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" id="completedTasks">0</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-warning shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">In Progress</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" id="inProgressTasks">0</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-clock fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-danger shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Overdue</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" id="overdueTasks">0</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters and Search -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label>Status</label>
+                        <select class="form-control" id="statusFilter">
+                            <option value="">All Statuses</option>
+                            <option value="pending">Pending</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                            <option value="overdue">Overdue</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label>Priority</label>
+                        <select class="form-control" id="priorityFilter">
+                            <option value="">All Priorities</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label>Department</label>
+                        <select class="form-control" id="departmentFilter">
+                            <option value="">All Departments</option>
+                            <option value="installation">Installation</option>
+                            <option value="manufacturing">Manufacturing</option>
+                            <option value="sales">Sales</option>
+                            <option value="support">Support</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label>Search</label>
+                        <input type="text" class="form-control" id="searchFilter" placeholder="Search tasks...">
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <div class="filter-tags">
+                        <span class="filter-tag" data-filter="today">Today</span>
+                        <span class="filter-tag" data-filter="week">This Week</span>
+                        <span class="filter-tag" data-filter="month">This Month</span>
+                        <span class="filter-tag" data-filter="my-tasks">My Tasks</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- View Toggle -->
+        <div class="mb-3">
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-outline-primary active" id="tableViewBtn">
+                    <i class="fas fa-table"></i> Table View
+                </button>
+                <button type="button" class="btn btn-outline-primary" id="kanbanViewBtn">
+                    <i class="fas fa-columns"></i> Kanban View
+                </button>
+            </div>
+        </div>
+
+        <!-- Table View -->
+        <div id="tableView" class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="tasksTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Task ID</th>
+                                <th>Title</th>
+                                <th>Project</th>
+                                <th>Assigned To</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Due Date</th>
+                                <th>Progress</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Tasks will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kanban View -->
+        <div id="kanbanView" class="d-none">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="kanban-column">
+                        <h5 class="text-center mb-3">
+                            <span class="badge badge-secondary">Pending</span>
+                            <span class="badge badge-light" id="pendingCount">0</span>
+                        </h5>
+                        <div id="pendingTasks" class="kanban-tasks">
+                            <!-- Pending tasks will be here -->
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="kanban-column">
+                        <h5 class="text-center mb-3">
+                            <span class="badge badge-warning">In Progress</span>
+                            <span class="badge badge-light" id="inProgressCount">0</span>
+                        </h5>
+                        <div id="inProgressTasks" class="kanban-tasks">
+                            <!-- In Progress tasks will be here -->
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="kanban-column">
+                        <h5 class="text-center mb-3">
+                            <span class="badge badge-info">Review</span>
+                            <span class="badge badge-light" id="reviewCount">0</span>
+                        </h5>
+                        <div id="reviewTasks" class="kanban-tasks">
+                            <!-- Review tasks will be here -->
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="kanban-column">
+                        <h5 class="text-center mb-3">
+                            <span class="badge badge-success">Completed</span>
+                            <span class="badge badge-light" id="completedCount">0</span>
+                        </h5>
+                        <div id="completedTasks" class="kanban-tasks">
+                            <!-- Completed tasks will be here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Task Modal -->
+    <div class="modal fade" id="createTaskModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create New Task</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <form id="createTaskForm">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Task Title *</label>
+                                    <input type="text" class="form-control" name="title" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Project</label>
+                                    <select class="form-control" name="project_id">
+                                        <option value="">Select Project</option>
+                                        <!-- Projects will be populated -->
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Priority *</label>
+                                    <select class="form-control" name="priority" required>
+                                        <option value="low">Low</option>
+                                        <option value="medium" selected>Medium</option>
+                                        <option value="high">High</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Department</label>
+                                    <select class="form-control" name="department">
+                                        <option value="installation">Installation</option>
+                                        <option value="manufacturing">Manufacturing</option>
+                                        <option value="sales">Sales</option>
+                                        <option value="support">Support</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Assigned To</label>
+                                    <select class="form-control" name="assigned_to">
+                                        <option value="">Select Employee</option>
+                                        <!-- Employees will be populated -->
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Due Date</label>
+                                    <input type="date" class="form-control" name="due_date">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea class="form-control" name="description" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Dependencies</label>
+                            <input type="text" class="form-control" name="dependencies" placeholder="Task IDs separated by commas">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Create Task</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Task Modal -->
+    <div class="modal fade" id="editTaskModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Task</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <form id="editTaskForm">
+                    <input type="hidden" name="task_id" id="editTaskId">
+                    <div class="modal-body">
+                        <!-- Same form fields as create, but with edit values -->
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Update Task</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task Details Modal -->
+    <div class="modal fade" id="taskDetailsModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Task Details</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="taskDetailsContent">
+                    <!-- Task details will be populated here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="editTask()">Edit Task</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Actions Modal -->
+    <div class="modal fade" id="bulkActionsModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Bulk Actions</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Action</label>
+                        <select class="form-control" id="bulkAction">
+                            <option value="status">Change Status</option>
+                            <option value="priority">Change Priority</option>
+                            <option value="assign">Reassign</option>
+                            <option value="delete">Delete</option>
+                        </select>
+                    </div>
+                    <div id="bulkActionOptions">
+                        <!-- Dynamic options based on selected action -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="executeBulkAction()">Execute</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% endblock %}
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.0.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.0.1/js/buttons.bootstrap4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.20/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+
+    <script>
+        let tasksTable;
+        let currentTasks = [];
+        let selectedTasks = [];
+
+        $(document).ready(function() {
+            initializeTasksTable();
+            loadTasks();
+            setupEventListeners();
+            setupKanbanDragAndDrop();
+        });
+
+        function initializeTasksTable() {
+            tasksTable = $('#tasksTable').DataTable({
+                columns: [
+                    { data: 'id' },
+                    { data: 'title' },
+                    { data: 'project_name' },
+                    { data: 'assigned_to_name' },
+                    { 
+                        data: 'priority',
+                        render: function(data) {
+                            const colors = { high: 'danger', medium: 'warning', low: 'success' };
+                            return `<span class="badge badge-${colors[data]}">${data.toUpperCase()}</span>`;
+                        }
+                    },
+                    { 
+                        data: 'status',
+                        render: function(data) {
+                            const colors = { 
+                                pending: 'secondary', 
+                                in_progress: 'warning', 
+                                completed: 'success', 
+                                overdue: 'danger' 
+                            };
+                            return `<span class="badge badge-${colors[data]}">${data.replace('_', ' ').toUpperCase()}</span>`;
+                        }
+                    },
+                    { data: 'due_date' },
+                    { 
+                        data: 'progress',
+                        render: function(data) {
+                            return `<div class="progress" style="height: 20px;">
+                                <div class="progress-bar" role="progressbar" style="width: ${data}%">${data}%</div>
+                            </div>`;
+                        }
+                    },
+                    {
+                        data: null,
+                        render: function(data) {
+                            return `<div class="btn-group">
+                                <button class="btn btn-sm btn-info" onclick="viewTask('${data.id}')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-primary" onclick="editTask('${data.id}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteTask('${data.id}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>`;
+                        }
+                    }
+                ],
+                order: [[6, 'asc']], // Sort by due date
+                pageLength: 25,
+                responsive: true
+            });
+        }
+
+        function setupEventListeners() {
+            // View toggle
+            $('#tableViewBtn').click(function() {
+                $('#tableView').removeClass('d-none');
+                $('#kanbanView').addClass('d-none');
+                $(this).addClass('active');
+                $('#kanbanViewBtn').removeClass('active');
+            });
+
+            $('#kanbanViewBtn').click(function() {
+                $('#tableView').addClass('d-none');
+                $('#kanbanView').removeClass('d-none');
+                $(this).addClass('active');
+                $('#tableViewBtn').removeClass('active');
+                updateKanbanView();
+            });
+
+            // Filters
+            $('#statusFilter, #priorityFilter, #departmentFilter').change(applyFilters);
+            $('#searchFilter').keyup(applyFilters);
+
+            // Filter tags
+            $('.filter-tag').click(function() {
+                $('.filter-tag').removeClass('active');
+                $(this).addClass('active');
+                applyFilters();
+            });
+
+            // Form submissions
+            $('#createTaskForm').submit(createTask);
+            $('#editTaskForm').submit(updateTask);
+        }
+
+        function setupKanbanDragAndDrop() {
+            const columns = ['pending', 'inProgress', 'review', 'completed'];
+            columns.forEach(column => {
+                new Sortable(document.getElementById(column + 'Tasks'), {
+                    group: 'tasks',
+                    animation: 150,
+                    onEnd: function(evt) {
+                        const taskId = evt.item.getAttribute('data-task-id');
+                        const newStatus = evt.to.id.replace('Tasks', '').replace(/([A-Z])/g, '_$1').toLowerCase();
+                        updateTaskStatus(taskId, newStatus);
+                    }
+                });
+            });
+        }
+
+        function loadTasks() {
+            fetch('/admin/api/tasks')
+                .then(response => response.json())
+                .then(data => {
+                    currentTasks = data.tasks || [];
+                    updateStatistics();
+                    updateTasksTable();
+                    updateKanbanView();
+                })
+                .catch(error => {
+                    console.error('Error loading tasks:', error);
+                    showAlert('Error loading tasks', 'danger');
+                });
+        }
+
+        function updateStatistics() {
+            const total = currentTasks.length;
+            const completed = currentTasks.filter(t => t.status === 'completed').length;
+            const inProgress = currentTasks.filter(t => t.status === 'in_progress').length;
+            const overdue = currentTasks.filter(t => t.status === 'overdue').length;
+
+            $('#totalTasks').text(total);
+            $('#completedTasks').text(completed);
+            $('#inProgressTasks').text(inProgress);
+            $('#overdueTasks').text(overdue);
+        }
+
+        function updateTasksTable() {
+            tasksTable.clear();
+            const filteredTasks = getFilteredTasks();
+            tasksTable.rows.add(filteredTasks).draw();
+        }
+
+        function updateKanbanView() {
+            const columns = ['pending', 'inProgress', 'review', 'completed'];
+            columns.forEach(column => {
+                const container = document.getElementById(column + 'Tasks');
+                container.innerHTML = '';
+                
+                const status = column === 'inProgress' ? 'in_progress' : column;
+                const tasks = currentTasks.filter(t => t.status === status);
+                
+                tasks.forEach(task => {
+                    const taskElement = createKanbanTaskElement(task);
+                    container.appendChild(taskElement);
+                });
+
+                // Update counts
+                document.getElementById(column + 'Count').textContent = tasks.length;
+            });
+        }
+
+        function createKanbanTaskElement(task) {
+            const div = document.createElement('div');
+            div.className = 'kanban-task';
+            div.setAttribute('data-task-id', task.id);
+            
+            const priorityClass = `task-priority-${task.priority}`;
+            div.className += ` ${priorityClass}`;
+            
+            div.innerHTML = `
+                <h6 class="mb-1">${task.title}</h6>
+                <p class="mb-1 text-muted small">${task.description || 'No description'}</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge badge-${task.priority === 'high' ? 'danger' : task.priority === 'medium' ? 'warning' : 'success'}">${task.priority}</span>
+                    <small class="text-muted">${task.due_date || 'No due date'}</small>
+                </div>
+                <div class="mt-2">
+                    <button class="btn btn-sm btn-outline-primary" onclick="viewTask('${task.id}')">View</button>
+                </div>
+            `;
+            
+            return div;
+        }
+
+        function getFilteredTasks() {
+            let filtered = [...currentTasks];
+            
+            const status = $('#statusFilter').val();
+            const priority = $('#priorityFilter').val();
+            const department = $('#departmentFilter').val();
+            const search = $('#searchFilter').val().toLowerCase();
+            
+            if (status) filtered = filtered.filter(t => t.status === status);
+            if (priority) filtered = filtered.filter(t => t.priority === priority);
+            if (department) filtered = filtered.filter(t => t.department === department);
+            if (search) {
+                filtered = filtered.filter(t => 
+                    t.title.toLowerCase().includes(search) ||
+                    t.description.toLowerCase().includes(search) ||
+                    t.project_name.toLowerCase().includes(search)
+                );
+            }
+            
+            return filtered;
+        }
+
+        function applyFilters() {
+            updateTasksTable();
+            if (!$('#kanbanView').hasClass('d-none')) {
+                updateKanbanView();
+            }
+        }
+
+        function createTask(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const taskData = Object.fromEntries(formData.entries());
+            
+            fetch('/admin/tasks/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(taskData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    $('#createTaskModal').modal('hide');
+                    event.target.reset();
+                    loadTasks();
+                    showAlert('Task created successfully', 'success');
+                } else {
+                    showAlert(data.message || 'Error creating task', 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('Error creating task', 'danger');
+            });
+        }
+
+        function viewTask(taskId) {
+            fetch(`/admin/api/tasks/${taskId}`)
+                .then(response => response.json())
+                .then(task => {
+                    const content = `
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h4>${task.title}</h4>
+                                <p class="text-muted">${task.description || 'No description provided'}</p>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <div class="progress-circle bg-${task.status === 'completed' ? 'success' : task.status === 'in_progress' ? 'warning' : 'secondary'}">
+                                            ${task.progress}%
+                                        </div>
+                                        <p class="mt-2 mb-0">Progress</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <h6>Task Details</h6>
+                                <table class="table table-sm">
+                                    <tr><td><strong>Status:</strong></td><td><span class="badge badge-${task.status === 'completed' ? 'success' : task.status === 'in_progress' ? 'warning' : 'secondary'}">${task.status.replace('_', ' ').toUpperCase()}</span></td></tr>
+                                    <tr><td><strong>Priority:</strong></td><td><span class="badge badge-${task.priority === 'high' ? 'danger' : task.priority === 'medium' ? 'warning' : 'success'}">${task.priority.toUpperCase()}</span></td></tr>
+                                    <tr><td><strong>Department:</strong></td><td>${task.department}</td></tr>
+                                    <tr><td><strong>Due Date:</strong></td><td>${task.due_date || 'No due date'}</td></tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Assignment</h6>
+                                <table class="table table-sm">
+                                    <tr><td><strong>Assigned To:</strong></td><td>${task.assigned_to_name || 'Unassigned'}</td></tr>
+                                    <tr><td><strong>Project:</strong></td><td>${task.project_name || 'No project'}</td></tr>
+                                    <tr><td><strong>Created:</strong></td><td>${task.created_at}</td></tr>
+                                    <tr><td><strong>Updated:</strong></td><td>${task.updated_at}</td></tr>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                    
+                    $('#taskDetailsContent').html(content);
+                    $('#taskDetailsModal').modal('show');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAlert('Error loading task details', 'danger');
+                });
+        }
+
+        function editTask(taskId) {
+            if (taskId) {
+                fetch(`/admin/api/tasks/${taskId}`)
+                    .then(response => response.json())
+                    .then(task => {
+                        $('#editTaskId').val(task.id);
+                        // Populate form fields
+                        $('#editTaskForm [name="title"]').val(task.title);
+                        $('#editTaskForm [name="project_id"]').val(task.project_id);
+                        $('#editTaskForm [name="priority"]').val(task.priority);
+                        $('#editTaskForm [name="department"]').val(task.department);
+                        $('#editTaskForm [name="assigned_to"]').val(task.assigned_to);
+                        $('#editTaskForm [name="due_date"]').val(task.due_date);
+                        $('#editTaskForm [name="description"]').val(task.description);
+                        $('#editTaskForm [name="dependencies"]').val(task.dependencies);
+                        
+                        $('#editTaskModal').modal('show');
+                    });
+            } else {
+                $('#editTaskModal').modal('show');
+            }
+        }
+
+        function updateTask(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const taskData = Object.fromEntries(formData.entries());
+            const taskId = taskData.task_id;
+            
+            fetch(`/admin/tasks/${taskId}/edit`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(taskData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    $('#editTaskModal').modal('hide');
+                    loadTasks();
+                    showAlert('Task updated successfully', 'success');
+                } else {
+                    showAlert(data.message || 'Error updating task', 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('Error updating task', 'danger');
+            });
+        }
+
+        function deleteTask(taskId) {
+            if (confirm('Are you sure you want to delete this task?')) {
+                fetch(`/admin/tasks/${taskId}/delete`, {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        loadTasks();
+                        showAlert('Task deleted successfully', 'success');
+                    } else {
+                        showAlert(data.message || 'Error deleting task', 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAlert('Error deleting task', 'danger');
+                });
+            }
+        }
+
+        function updateTaskStatus(taskId, newStatus) {
+            fetch(`/admin/tasks/${taskId}/status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ status: newStatus })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    loadTasks();
+                }
+            })
+            .catch(error => {
+                console.error('Error updating task status:', error);
+            });
+        }
+
+        function exportTasks() {
+            const filteredTasks = getFilteredTasks();
+            const csvContent = convertToCSV(filteredTasks);
+            downloadCSV(csvContent, 'tasks_export.csv');
+        }
+
+        function convertToCSV(tasks) {
+            const headers = ['ID', 'Title', 'Project', 'Assigned To', 'Priority', 'Status', 'Due Date', 'Progress', 'Department', 'Description'];
+            const rows = tasks.map(task => [
+                task.id,
+                task.title,
+                task.project_name || '',
+                task.assigned_to_name || '',
+                task.priority,
+                task.status,
+                task.due_date || '',
+                task.progress,
+                task.department,
+                task.description || ''
+            ]);
+            
+            return [headers, ...rows].map(row => row.map(field => `"${field}"`).join(',')).join('\n');
+        }
+
+        function downloadCSV(content, filename) {
+            const blob = new Blob([content], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="close" data-dismiss="alert">
+                    <span>&times;</span>
+                </button>
+            `;
+            
+            document.querySelector('.container-fluid').insertBefore(alertDiv, document.querySelector('.container-fluid').firstChild);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
+

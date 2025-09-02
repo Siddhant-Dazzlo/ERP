@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}Edit User - Trivanta ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Edit User</h1>
+        <a href="{{ url_for('admin.users') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left fa-sm"></i> Back to Users
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Edit User Information</h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Full Name *</label>
+                                    <input type="text" class="form-control" name="name" value="{{ user.name }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Email *</label>
+                                    <input type="email" class="form-control" name="email" value="{{ user.email }}" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Role *</label>
+                                    <select class="form-control" name="role" required>
+                                        <option value="admin" {{ 'selected' if user.role == 'admin' }}>Admin</option>
+                                        <option value="manager" {{ 'selected' if user.role == 'manager' }}>Manager</option>
+                                        <option value="employee" {{ 'selected' if user.role == 'employee' }}>Employee</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Department</label>
+                                    <select class="form-control" name="department">
+                                        <option value="">Select Department</option>
+                                        <option value="Installation" {{ 'selected' if user.department == 'Installation' }}>Installation</option>
+                                        <option value="Manufacturing" {{ 'selected' if user.department == 'Manufacturing' }}>Manufacturing</option>
+                                        <option value="Sales" {{ 'selected' if user.department == 'Sales' }}>Sales</option>
+                                        <option value="Operations" {{ 'selected' if user.department == 'Operations' }}>Operations</option>
+                                        <option value="IT" {{ 'selected' if user.department == 'IT' }}>IT</option>
+                                        <option value="HR" {{ 'selected' if user.department == 'HR' }}>HR</option>
+                                        <option value="Finance" {{ 'selected' if user.department == 'Finance' }}>Finance</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>New Password</label>
+                                    <input type="password" class="form-control" name="password" placeholder="Leave blank to keep current password">
+                                    <small class="form-text text-muted">Only fill this if you want to change the password</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Status</label>
+                                    <select class="form-control" name="status">
+                                        <option value="active" {{ 'selected' if user.status == 'active' }}>Active</option>
+                                        <option value="inactive" {{ 'selected' if user.status == 'inactive' }}>Inactive</option>
+                                        <option value="suspended" {{ 'selected' if user.status == 'suspended' }}>Suspended</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Notes</label>
+                            <textarea class="form-control" name="notes" rows="3" placeholder="Any additional notes about this user">{{ user.notes or '' }}</textarea>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Update User
+                            </button>
+                            <a href="{{ url_for('admin.users') }}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">User Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>User ID:</strong><br>
+                        <span class="text-muted">{{ user.id }}</span>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Created:</strong><br>
+                        <span class="text-muted">{{ user.created_at.split('T')[0] if user.created_at else 'N/A' }}</span>
+                    </div>
+                    {% if user.updated_at %}
+                    <div class="mb-3">
+                        <strong>Last Updated:</strong><br>
+                        <span class="text-muted">{{ user.updated_at.split('T')[0] if user.updated_at else 'N/A' }}</span>
+                    </div>
+                    {% endif %}
+                    {% if user.last_login %}
+                    <div class="mb-3">
+                        <strong>Last Login:</strong><br>
+                        <span class="text-muted">{{ user.last_login.split('T')[0] if user.last_login else 'Never' }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <button class="btn btn-sm btn-info btn-block" onclick="viewUserActivity('{{ user.id }}')">
+                            <i class="fas fa-chart-line"></i> View Activity
+                        </button>
+                    </div>
+                    <div class="mb-2">
+                        <button class="btn btn-sm btn-warning btn-block" onclick="resetPassword('{{ user.id }}')">
+                            <i class="fas fa-key"></i> Reset Password
+                        </button>
+                    </div>
+                    <div class="mb-2">
+                        <button class="btn btn-sm btn-danger btn-block" onclick="deleteUser('{{ user.id }}')">
+                            <i class="fas fa-trash"></i> Delete User
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteUserModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm User Deletion</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this user?</p>
+                <p><strong>User:</strong> {{ user.name }}</p>
+                <p><strong>Email:</strong> {{ user.email }}</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    This action cannot be undone. The user will be marked as inactive and all associated data will be preserved.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <form method="POST" action="{{ url_for('admin.delete_user', user_id=user.id) }}" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Delete User</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reset Password Modal -->
+<div class="modal fade" id="resetPasswordModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Reset User Password</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>This will generate a new temporary password for the user.</p>
+                <p><strong>User:</strong> {{ user.name }}</p>
+                <div class="form-group">
+                    <label>New Temporary Password</label>
+                    <input type="text" class="form-control" id="newTempPassword" readonly>
+                </div>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    The user will need to change this password on their next login.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="copyPassword()">
+                    <i class="fas fa-copy"></i> Copy Password
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function deleteUser(userId) {
+    $('#deleteUserModal').modal('show');
+}
+
+function resetPassword(userId) {
+    // Generate a random temporary password
+    const tempPassword = Math.random().toString(36).substring(2, 10);
+    $('#newTempPassword').val(tempPassword);
+    $('#resetPasswordModal').modal('show');
+    
+    // Here you would typically make an API call to update the password
+    // For now, we'll just show the generated password
+}
+
+function copyPassword() {
+    const passwordField = document.getElementById('newTempPassword');
+    passwordField.select();
+    document.execCommand('copy');
+    
+    // Show feedback
+    const copyBtn = event.target;
+    const originalText = copyBtn.innerHTML;
+    copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+    copyBtn.classList.remove('btn-primary');
+    copyBtn.classList.add('btn-success');
+    
+    setTimeout(() => {
+        copyBtn.innerHTML = originalText;
+        copyBtn.classList.remove('btn-success');
+        copyBtn.classList.add('btn-primary');
+    }, 2000);
+}
+
+function viewUserActivity(userId) {
+    // Redirect to user activity page
+    window.location.href = `/admin/users/${userId}/activity`;
+}
+</script>
+{% endblock %}
+

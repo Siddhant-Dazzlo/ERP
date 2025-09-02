@@ -1,0 +1,351 @@
+{% extends "base.html" %}
+
+{% block title %}Add Team Member - Manager Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">Add New Team Member</h1>
+                <a href="{{ url_for('manager.employees') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Back to Team
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-user-plus me-2"></i>
+                        Employee Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <!-- Basic Information -->
+                        <h6 class="text-primary mb-3">
+                            <i class="fas fa-user me-2"></i>
+                            Basic Information
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="name" class="form-label">Full Name *</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">Email Address *</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="phone" class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" id="phone" name="phone">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="date_of_birth" class="form-label">Date of Birth</label>
+                                <input type="date" class="form-control" id="date_of_birth" name="date_of_birth">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="gender" class="form-label">Gender</label>
+                                <select class="form-select" id="gender" name="gender">
+                                    <option value="">Select Gender</option>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                    <option value="other">Other</option>
+                                    <option value="prefer_not_to_say">Prefer not to say</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="nationality" class="form-label">Nationality</label>
+                                <input type="text" class="form-control" id="nationality" name="nationality">
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Employment Information -->
+                        <h6 class="text-primary mb-3">
+                            <i class="fas fa-briefcase me-2"></i>
+                            Employment Information
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="department" class="form-label">Department *</label>
+                                <select class="form-select" id="department" name="department" required>
+                                    <option value="">Select Department</option>
+                                    <option value="development">Development</option>
+                                    <option value="design">Design</option>
+                                    <option value="marketing">Marketing</option>
+                                    <option value="sales">Sales</option>
+                                    <option value="support">Support</option>
+                                    <option value="hr">HR</option>
+                                    <option value="finance">Finance</option>
+                                    <option value="operations">Operations</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="position" class="form-label">Position *</label>
+                                <input type="text" class="form-control" id="position" name="position" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="hire_date" class="form-label">Hire Date *</label>
+                                <input type="date" class="form-control" id="hire_date" name="hire_date" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="employment_type" class="form-label">Employment Type</label>
+                                <select class="form-select" id="employment_type" name="employment_type">
+                                    <option value="full_time">Full-time</option>
+                                    <option value="part_time">Part-time</option>
+                                    <option value="contract">Contract</option>
+                                    <option value="internship">Internship</option>
+                                    <option value="freelance">Freelance</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="work_location" class="form-label">Work Location</label>
+                                <select class="form-select" id="work_location" name="work_location">
+                                    <option value="office">Office</option>
+                                    <option value="remote">Remote</option>
+                                    <option value="hybrid">Hybrid</option>
+                                    <option value="field">Field</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="supervisor" class="form-label">Direct Supervisor</label>
+                                <input type="text" class="form-control" id="supervisor" name="supervisor">
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Account Information -->
+                        <h6 class="text-primary mb-3">
+                            <i class="fas fa-shield-alt me-2"></i>
+                            Account Information
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="password" class="form-label">Password *</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                                <small class="text-muted">Minimum 8 characters required</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="confirm_password" class="form-label">Confirm Password *</label>
+                                <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="status" class="form-label">Status</label>
+                                <select class="form-select" id="status" name="status">
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                    <option value="on_leave">On Leave</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="role" class="form-label">Role</label>
+                                <select class="form-select" id="role" name="role">
+                                    <option value="employee">Employee</option>
+                                    <option value="manager">Manager</option>
+                                    <option value="admin">Admin</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Additional Information -->
+                        <h6 class="text-primary mb-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Additional Information
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="emergency_contact_name" class="form-label">Emergency Contact Name</label>
+                                <input type="text" class="form-control" id="emergency_contact_name" name="emergency_contact_name">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="emergency_contact_phone" class="form-label">Emergency Contact Phone</label>
+                                <input type="tel" class="form-control" id="emergency_contact_phone" name="emergency_contact_phone">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="emergency_contact_relationship" class="form-label">Relationship</label>
+                                <select class="form-select" id="emergency_contact_relationship" name="emergency_contact_relationship">
+                                    <option value="">Select Relationship</option>
+                                    <option value="spouse">Spouse</option>
+                                    <option value="parent">Parent</option>
+                                    <option value="sibling">Sibling</option>
+                                    <option value="child">Child</option>
+                                    <option value="friend">Friend</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="address" class="form-label">Address</label>
+                                <textarea class="form-control" id="address" name="address" rows="2" 
+                                          placeholder="Enter full address..."></textarea>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <a href="{{ url_for('manager.employees') }}" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>
+                                Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>
+                                Create Employee
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        Employee Onboarding Tips
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-primary">
+                            <i class="fas fa-check-circle me-2"></i>
+                            Complete Profile
+                        </h6>
+                        <p class="small text-muted">Fill in all available fields to create comprehensive employee profiles.</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="text-primary">
+                            <i class="fas fa-building me-2"></i>
+                            Department Assignment
+                        </h6>
+                        <p class="small text-muted">Assign employees to appropriate departments for better organization.</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="text-primary">
+                            <i class="fas fa-shield-alt me-2"></i>
+                            Security Setup
+                        </h6>
+                        <p class="small text-muted">Ensure strong passwords and proper role assignments for security.</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="text-primary">
+                            <i class="fas fa-phone me-2"></i>
+                            Emergency Contacts
+                        </h6>
+                        <p class="small text-muted">Always include emergency contact information for safety.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Form Completion
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center">
+                        <div class="h2 text-primary mb-2" id="completionScore">0%</div>
+                        <div class="progress mb-2" style="height: 8px;">
+                            <div class="progress-bar" id="completionBar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <small class="text-muted">Complete more fields to improve profile</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Form completion calculator and password validation
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const inputs = form.querySelectorAll('input, select, textarea');
+    const completionScore = document.getElementById('completionScore');
+    const completionBar = document.getElementById('completionBar');
+    const password = document.getElementById('password');
+    const confirmPassword = document.getElementById('confirm_password');
+    
+    function calculateCompletion() {
+        let filledFields = 0;
+        let totalFields = inputs.length;
+        
+        inputs.forEach(input => {
+            if (input.value.trim() !== '') {
+                filledFields++;
+            }
+        });
+        
+        const score = Math.round((filledFields / totalFields) * 100);
+        completionScore.textContent = score + '%';
+        completionBar.style.width = score + '%';
+        
+        if (score < 50) {
+            completionBar.className = 'progress-bar bg-danger';
+        } else if (score < 80) {
+            completionBar.className = 'progress-bar bg-warning';
+        } else {
+            completionBar.className = 'progress-bar bg-success';
+        }
+    }
+    
+    function validatePassword() {
+        if (password.value !== confirmPassword.value) {
+            confirmPassword.setCustomValidity('Passwords do not match');
+        } else {
+            confirmPassword.setCustomValidity('');
+        }
+        
+        if (password.value.length < 8) {
+            password.setCustomValidity('Password must be at least 8 characters long');
+        } else {
+            password.setCustomValidity('');
+        }
+    }
+    
+    inputs.forEach(input => {
+        input.addEventListener('input', calculateCompletion);
+        input.addEventListener('change', calculateCompletion);
+    });
+    
+    password.addEventListener('input', validatePassword);
+    confirmPassword.addEventListener('input', validatePassword);
+    
+    // Initial calculation
+    calculateCompletion();
+});
+</script>
+{% endblock %}
+

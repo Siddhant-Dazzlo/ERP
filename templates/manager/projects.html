@@ -1,0 +1,426 @@
+{% extends "base.html" %}
+
+{% block title %}Projects Management - Manager Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="{{ url_for('manager.dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Projects</li>
+                    </ol>
+                </div>
+                <h4 class="page-title">Projects Management</h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="header-title">All Projects</h4>
+                    <a href="{{ url_for('manager.create_project') }}" class="btn btn-primary">
+                        <i class="mdi mdi-plus"></i> Create Project
+                    </a>
+                </div>
+                <div class="card-body">
+                    <!-- Filters -->
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <select class="form-select" id="statusFilter">
+                                <option value="">All Statuses</option>
+                                <option value="pending">Pending</option>
+                                <option value="planning">Planning</option>
+                                <option value="in_progress">In Progress</option>
+                                <option value="on_hold">On Hold</option>
+                                <option value="completed">Completed</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="typeFilter">
+                                <option value="">All Types</option>
+                                <option value="installation">Installation</option>
+                                <option value="manufacturing">Manufacturing</option>
+                                <option value="both">Both</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="priorityFilter">
+                                <option value="">All Priorities</option>
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                                <option value="urgent">Urgent</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" id="searchInput" placeholder="Search projects...">
+                        </div>
+                    </div>
+
+                    <!-- Projects Table -->
+                    <div class="table-responsive">
+                        <table class="table table-centered table-hover mb-0" id="projectsTable">
+                            <thead>
+                                <tr>
+                                    <th>Project</th>
+                                    <th>Client</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Budget</th>
+                                    <th>Timeline</th>
+                                    <th>Team</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for project in projects %}
+                                <tr data-status="{{ project.status }}" data-type="{{ project.type }}" data-priority="{{ project.priority }}">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm bg-light rounded-circle me-2">
+                                                <span class="avatar-title text-primary fw-bold">
+                                                    {{ project.name[0]|upper }}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">{{ project.name }}</h6>
+                                                <small class="text-muted">{{ project.description|truncate(50) if project.description else 'No description' }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% set client = project.client_name or 'Unknown Client' %}
+                                        <span class="fw-medium">{{ client }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ project.type|title }}</span>
+                                    </td>
+                                    <td>
+                                        {% set status_colors = {
+                                            'pending': 'bg-warning',
+                                            'planning': 'bg-info',
+                                            'in_progress': 'bg-primary',
+                                            'on_hold': 'bg-orange',
+                                            'completed': 'bg-success',
+                                            'cancelled': 'bg-danger'
+                                        } %}
+                                        <span class="badge {{ status_colors.get(project.status, 'bg-secondary') }}">
+                                            {{ project.status|replace('_', ' ')|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <strong>${{ "{:,.2f}".format(project.budget or 0) }}</strong>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-column">
+                                            {% if project.start_date %}
+                                            <small><strong>Start:</strong> {{ project.start_date }}</small>
+                                            {% endif %}
+                                            {% if project.end_date %}
+                                            <small><strong>End:</strong> {{ project.end_date }}</small>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if project.assigned_employees %}
+                                            {% set employee_count = project.assigned_employees|length %}
+                                            <span class="badge bg-light text-dark">{{ employee_count }} Member{{ 's' if employee_count != 1 else '' }}</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">Unassigned</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
+                                                Actions
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="#" onclick="viewProject('{{ project.id }}')">
+                                                    <i class="mdi mdi-eye"></i> View Details
+                                                </a></li>
+                                                <li><a class="dropdown-item" href="#" onclick="editProject('{{ project.id }}')">
+                                                    <i class="mdi mdi-pencil"></i> Edit
+                                                </a></li>
+                                                <li><a class="dropdown-item" href="#" onclick="manageTeam('{{ project.id }}')">
+                                                    <i class="mdi mdi-account-multiple"></i> Manage Team
+                                                </a></li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li><a class="dropdown-item text-success" href="#" onclick="updateStatus('{{ project.id }}')">
+                                                    <i class="mdi mdi-update"></i> Update Status
+                                                </a></li>
+                                                <li><a class="dropdown-item text-danger" href="#" onclick="deleteProject('{{ project.id }}')">
+                                                    <i class="mdi mdi-delete"></i> Delete
+                                                </a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Empty State -->
+                    {% if not projects %}
+                    <div class="text-center py-5">
+                        <div class="avatar-lg mx-auto mb-3">
+                            <div class="avatar-title bg-light rounded-circle">
+                                <i class="mdi mdi-folder-multiple text-muted" style="font-size: 3rem;"></i>
+                            </div>
+                        </div>
+                        <h4 class="text-muted">No Projects Found</h4>
+                        <p class="text-muted mb-3">Start by creating your first project to manage business operations.</p>
+                        <a href="{{ url_for('manager.create_project') }}" class="btn btn-primary">
+                            <i class="mdi mdi-plus"></i> Create Your First Project
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Project Details Modal -->
+<div class="modal fade" id="projectDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Project Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="projectDetailsContent">
+                <!-- Content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="editProjectFromModal()">Edit Project</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Update Status Modal -->
+<div class="modal fade" id="updateStatusModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Project Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="updateStatusForm">
+                    <div class="mb-3">
+                        <label for="newStatus" class="form-label">New Status</label>
+                        <select class="form-select" id="newStatus" name="newStatus" required>
+                            <option value="">Select Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="planning">Planning</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="on_hold">On Hold</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="statusNotes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="statusNotes" name="statusNotes" rows="3" placeholder="Add notes about the status change"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveStatusUpdate()">Update Status</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentProjectId = null;
+
+$(document).ready(function() {
+    // Initialize filters
+    initializeFilters();
+    
+    // Search functionality
+    $('#searchInput').on('keyup', function() {
+        filterProjects();
+    });
+});
+
+function initializeFilters() {
+    // Status filter
+    $('#statusFilter').on('change', function() {
+        filterProjects();
+    });
+    
+    // Type filter
+    $('#typeFilter').on('change', function() {
+        filterProjects();
+    });
+    
+    // Priority filter
+    $('#priorityFilter').on('change', function() {
+        filterProjects();
+    });
+}
+
+function filterProjects() {
+    const searchTerm = $('#searchInput').val().toLowerCase();
+    const statusFilter = $('#statusFilter').val();
+    const typeFilter = $('#typeFilter').val();
+    const priorityFilter = $('#priorityFilter').val();
+    
+    $('#projectsTable tbody tr').each(function() {
+        const row = $(this);
+        const status = row.data('status');
+        const type = row.data('type');
+        const priority = row.data('priority');
+        const text = row.text().toLowerCase();
+        
+        let show = true;
+        
+        // Search filter
+        if (searchTerm && !text.includes(searchTerm)) {
+            show = false;
+        }
+        
+        // Status filter
+        if (statusFilter && status !== statusFilter) {
+            show = false;
+        }
+        
+        // Type filter
+        if (typeFilter && type !== typeFilter) {
+            show = false;
+        }
+        
+        // Priority filter
+        if (priorityFilter && priority !== priorityFilter) {
+            show = false;
+        }
+        
+        row.toggle(show);
+    });
+}
+
+function viewProject(projectId) {
+    // Load project details via AJAX
+    $.get(`/manager/api/projects/${projectId}`, function(data) {
+        if (data.error) {
+            showAlert('Error loading project details', 'error');
+            return;
+        }
+        
+        const project = data;
+        const modalContent = `
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Project Information</h6>
+                    <p><strong>Name:</strong> ${project.name}</p>
+                    <p><strong>Type:</strong> ${project.type}</p>
+                    <p><strong>Status:</strong> ${project.status}</p>
+                    <p><strong>Budget:</strong> $${project.budget || 0}</p>
+                </div>
+                <div class="col-md-6">
+                    <h6>Timeline</h6>
+                    <p><strong>Start Date:</strong> ${project.start_date || 'Not set'}</p>
+                    <p><strong>End Date:</strong> ${project.end_date || 'Not set'}</p>
+                    <p><strong>Created:</strong> ${project.created_at || 'N/A'}</p>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-12">
+                    <h6>Description</h6>
+                    <p>${project.description || 'No description available'}</p>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-12">
+                    <h6>Team Members</h6>
+                    ${project.assigned_employees && project.assigned_employees.length > 0 ? 
+                        `<p>${project.assigned_employees.join(', ')}</p>` : 
+                        '<p class="text-muted">No team members assigned</p>'
+                    }
+                </div>
+            </div>
+        `;
+        
+        $('#projectDetailsContent').html(modalContent);
+        $('#projectDetailsModal').modal('show');
+    });
+}
+
+function editProject(projectId) {
+    // Redirect to edit page or show edit modal
+    window.location.href = `/manager/projects/${projectId}/edit`;
+}
+
+function manageTeam(projectId) {
+    // Show team management modal
+    showAlert('Team management functionality coming soon', 'info');
+}
+
+function updateStatus(projectId) {
+    currentProjectId = projectId;
+    $('#updateStatusModal').modal('show');
+}
+
+function saveStatusUpdate() {
+    if (!currentProjectId) return;
+    
+    const newStatus = $('#newStatus').val();
+    const notes = $('#statusNotes').val();
+    
+    if (!newStatus) {
+        showAlert('Please select a new status', 'error');
+        return;
+    }
+    
+    // Send status update request
+    $.post(`/manager/projects/${currentProjectId}/update-status`, {
+        status: newStatus,
+        notes: notes
+    }, function(response) {
+        if (response.success) {
+            showAlert('Project status updated successfully', 'success');
+            $('#updateStatusModal').modal('hide');
+            location.reload();
+        } else {
+            showAlert('Error updating project status', 'error');
+        }
+    });
+}
+
+function deleteProject(projectId) {
+    if (confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
+        // Send delete request
+        $.post(`/manager/projects/${projectId}/delete`, function(response) {
+            if (response.success) {
+                showAlert('Project deleted successfully', 'success');
+                location.reload();
+            } else {
+                showAlert('Error deleting project', 'error');
+            }
+        });
+    }
+}
+
+function editProjectFromModal() {
+    // Close modal and redirect to edit
+    $('#projectDetailsModal').modal('hide');
+    // Get project ID from modal and redirect
+    // This would need to be implemented based on how the modal is populated
+}
+</script>
+{% endblock %}
+

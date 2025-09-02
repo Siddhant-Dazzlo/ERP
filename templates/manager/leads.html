@@ -1,0 +1,376 @@
+{% extends "base.html" %}
+
+{% block title %}Leads Management - Manager Portal{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card card-custom">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="card-title mb-0">Leads Management</h4>
+                    <p class="text-muted mb-0">Manage and track potential clients</p>
+                </div>
+                <a href="{{ url_for('manager.create_lead') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>Create Lead
+                </a>
+            </div>
+            <div class="card-body">
+                <!-- Filters -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <label for="statusFilter" class="form-label">Status</label>
+                        <select class="form-select" id="statusFilter">
+                            <option value="">All Statuses</option>
+                            <option value="new">New</option>
+                            <option value="contacted">Contacted</option>
+                            <option value="qualified">Qualified</option>
+                            <option value="proposal">Proposal Sent</option>
+                            <option value="negotiation">Negotiation</option>
+                            <option value="converted">Converted</option>
+                            <option value="lost">Lost</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="sourceFilter" class="form-label">Source</label>
+                        <select class="form-select" id="sourceFilter">
+                            <option value="">All Sources</option>
+                            <option value="website">Website</option>
+                            <option value="referral">Referral</option>
+                            <option value="social_media">Social Media</option>
+                            <option value="cold_call">Cold Call</option>
+                            <option value="trade_show">Trade Show</option>
+                            <option value="advertisement">Advertisement</option>
+                            <option value="email_campaign">Email Campaign</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="priorityFilter" class="form-label">Priority</label>
+                        <select class="form-select" id="priorityFilter">
+                            <option value="">All Priorities</option>
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="urgent">Urgent</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="searchInput" class="form-label">Search</label>
+                        <input type="text" class="form-control" id="searchInput" placeholder="Search leads...">
+                    </div>
+                </div>
+
+                <!-- Leads Table -->
+                <div class="table-responsive">
+                    <table class="table table-hover table-custom" id="leadsTable">
+                        <thead>
+                            <tr>
+                                <th>Contact</th>
+                                <th>Company</th>
+                                <th>Business Type</th>
+                                <th>Source</th>
+                                <th>Status</th>
+                                <th>Priority</th>
+                                <th>Assigned To</th>
+                                <th>Created Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for lead in leads|default([]) %}
+                            <tr data-status="{{ lead.status }}" data-source="{{ lead.source }}" data-priority="{{ lead.priority }}">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                                            <span class="text-primary fw-bold">{{ lead.name[0]|upper }}</span>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0">{{ lead.name }}</h6>
+                                            <small class="text-muted">{{ lead.email }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <strong>{{ lead.company }}</strong>
+                                    {% if lead.phone %}
+                                    <br><small class="text-muted">{{ lead.phone }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{ lead.business_type|title }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ lead.source|replace('_', ' ')|title }}</span>
+                                </td>
+                                <td>
+                                    {% set status_colors = {
+                                        'new': 'bg-warning',
+                                        'contacted': 'bg-info',
+                                        'qualified': 'bg-primary',
+                                        'proposal': 'bg-purple',
+                                        'negotiation': 'bg-orange',
+                                        'converted': 'bg-success',
+                                        'lost': 'bg-danger'
+                                    } %}
+                                    <span class="badge {{ status_colors.get(lead.status, 'bg-secondary') }}">
+                                        {{ lead.status|replace('_', ' ')|title }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% set priority_colors = {
+                                        'low': 'bg-success',
+                                        'medium': 'bg-warning',
+                                        'high': 'bg-orange',
+                                        'urgent': 'bg-danger'
+                                    } %}
+                                    <span class="badge {{ priority_colors.get(lead.priority, 'bg-secondary') }}">
+                                        {{ lead.priority|title }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if lead.assigned_to %}
+                                        <span class="badge bg-light text-dark">{{ lead.assigned_to_name or 'Unknown' }}</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">Unassigned</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        {{ lead.created_at|string|truncate(10, true, '') if lead.created_at else 'N/A' }}
+                                    </small>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
+                                            Actions
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="#" onclick="viewLead('{{ lead.id }}')">
+                                                <i class="bi bi-eye me-2"></i>View Details
+                                            </a></li>
+                                            <li><a class="dropdown-item" href="#" onclick="editLead('{{ lead.id }}')">
+                                                <i class="bi bi-pencil me-2"></i>Edit
+                                            </a></li>
+                                            <li><a class="dropdown-item" href="#" onclick="assignLead('{{ lead.id }}')">
+                                                <i class="bi bi-person-plus me-2"></i>Assign
+                                            </a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item text-success" href="#" onclick="convertLead('{{ lead.id }}')">
+                                                <i class="bi bi-check-circle me-2"></i>Convert to Client
+                                            </a></li>
+                                            <li><a class="dropdown-item text-danger" href="#" onclick="deleteLead('{{ lead.id }}')">
+                                                <i class="bi bi-trash me-2"></i>Delete
+                                            </a></li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="9" class="text-center text-muted py-5">
+                                    <div class="avatar-lg mx-auto mb-3">
+                                        <div class="bg-light rounded-circle p-4 mx-auto" style="width: 80px; height: 80px;">
+                                            <i class="bi bi-funnel text-muted" style="font-size: 2rem;"></i>
+                                        </div>
+                                    </div>
+                                    <h4 class="text-muted">No Leads Found</h4>
+                                    <p class="text-muted mb-3">Start by creating your first lead to track potential clients.</p>
+                                    <a href="{{ url_for('manager.create_lead') }}" class="btn btn-primary">
+                                        <i class="bi bi-plus-circle me-2"></i>Create Your First Lead
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lead Details Modal -->
+<div class="modal fade" id="leadDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Lead Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="leadDetailsContent">
+                <!-- Content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="editLeadFromModal()">Edit Lead</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Initialize filters
+    initializeFilters();
+    
+    // Search functionality
+    $('#searchInput').on('keyup', function() {
+        filterLeads();
+    });
+});
+
+function initializeFilters() {
+    // Status filter
+    $('#statusFilter').on('change', function() {
+        filterLeads();
+    });
+    
+    // Source filter
+    $('#sourceFilter').on('change', function() {
+        filterLeads();
+    });
+    
+    // Priority filter
+    $('#priorityFilter').on('change', function() {
+        filterLeads();
+    });
+}
+
+function filterLeads() {
+    const searchTerm = $('#searchInput').val().toLowerCase();
+    const statusFilter = $('#statusFilter').val();
+    const sourceFilter = $('#sourceFilter').val();
+    const priorityFilter = $('#priorityFilter').val();
+    
+    $('#leadsTable tbody tr').each(function() {
+        const row = $(this);
+        const status = row.data('status');
+        const source = row.data('source');
+        const priority = row.data('priority');
+        const text = row.text().toLowerCase();
+        
+        let show = true;
+        
+        // Search filter
+        if (searchTerm && !text.includes(searchTerm)) {
+            show = false;
+        }
+        
+        // Status filter
+        if (statusFilter && status !== statusFilter) {
+            show = false;
+        }
+        
+        // Source filter
+        if (sourceFilter && source !== sourceFilter) {
+            show = false;
+        }
+        
+        // Priority filter
+        if (priorityFilter && priority !== priorityFilter) {
+            show = false;
+        }
+        
+        row.toggle(show);
+    });
+}
+
+function viewLead(leadId) {
+    // Load lead details via AJAX
+    $.get(`/manager/api/leads/${leadId}`, function(data) {
+        if (data.error) {
+            showAlert('Error loading lead details', 'error');
+            return;
+        }
+        
+        const lead = data;
+        const modalContent = `
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Contact Information</h6>
+                    <p><strong>Name:</strong> ${lead.name}</p>
+                    <p><strong>Email:</strong> ${lead.email}</p>
+                    <p><strong>Phone:</strong> ${lead.phone || 'N/A'}</p>
+                    <p><strong>Company:</strong> ${lead.company}</p>
+                </div>
+                <div class="col-md-6">
+                    <h6>Lead Details</h6>
+                    <p><strong>Business Type:</strong> ${lead.business_type}</p>
+                    <p><strong>Source:</strong> ${lead.source}</p>
+                    <p><strong>Status:</strong> ${lead.status}</p>
+                    <p><strong>Priority:</strong> ${lead.priority}</p>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-12">
+                    <h6>Notes</h6>
+                    <p>${lead.notes || 'No notes available'}</p>
+                </div>
+            </div>
+        `;
+        
+        $('#leadDetailsContent').html(modalContent);
+        $('#leadDetailsModal').modal('show');
+    });
+}
+
+function editLead(leadId) {
+    // Redirect to edit page or show edit modal
+    window.location.href = `/manager/leads/${leadId}/edit`;
+}
+
+function assignLead(leadId) {
+    // Show assignment modal
+    showAlert('Lead assignment functionality coming soon', 'info');
+}
+
+function convertLead(leadId) {
+    // Show conversion modal
+    if (confirm('Are you sure you want to convert this lead to a client?')) {
+        showAlert('Lead conversion functionality coming soon', 'info');
+    }
+}
+
+function deleteLead(leadId) {
+    if (confirm('Are you sure you want to delete this lead? This action cannot be undone.')) {
+        // Send delete request
+        $.post(`/manager/leads/${leadId}/delete`, function(response) {
+            if (response.success) {
+                showAlert('Lead deleted successfully', 'success');
+                location.reload();
+            } else {
+                showAlert('Error deleting lead', 'error');
+            }
+        });
+    }
+}
+
+function editLeadFromModal() {
+    // Close modal and redirect to edit
+    $('#leadDetailsModal').modal('hide');
+    // Get lead ID from modal and redirect
+    // This would need to be implemented based on how the modal is populated
+}
+
+function showAlert(message, type) {
+    const alertClass = type === 'error' ? 'danger' : type === 'success' ? 'success' : 'info';
+    const alertHtml = `
+        <div class="alert alert-${alertClass} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    // Insert alert at the top of the page
+    $('.container-fluid').first().prepend(alertHtml);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(function() {
+        $('.alert').fadeOut();
+    }, 5000);
+}
+</script>
+{% endblock %}

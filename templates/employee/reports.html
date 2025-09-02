@@ -1,0 +1,460 @@
+{% extends "base.html" %}
+
+{% block title %}Reports - Employee Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">Performance Reports</h1>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-primary" onclick="window.print()">
+                        <i class="fas fa-print me-2"></i>
+                        Print Report
+                    </button>
+                    <button class="btn btn-outline-success" id="exportBtn">
+                        <i class="fas fa-download me-2"></i>
+                        Export PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Overview -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Total Projects</h6>
+                            <h3 class="mb-0">{{ total_projects }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-project-diagram fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Completed</h6>
+                            <h3 class="mb-0">{{ completed_projects }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">In Progress</h6>
+                            <h3 class="mb-0">{{ pending_projects }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-clock fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Success Rate</h6>
+                            <h3 class="mb-0">
+                                {% if total_projects > 0 %}
+                                    {{ ((completed_projects / total_projects) * 100)|round(1) }}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            </h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-chart-line fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Charts -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Project Performance Over Time
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="performanceChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>
+                        Project Status Distribution
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="statusChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Projects -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-history me-2"></i>
+                        Recent Project Activity
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Project Name</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Progress</th>
+                                    <th>Performance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for project in recent_projects %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold">{{ project.name }}</div>
+                                        <small class="text-muted">ID: {{ project.id }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark">{{ project.type|title }}</span>
+                                    </td>
+                                    <td>
+                                        {% if project.status == 'completed' %}
+                                            <span class="badge bg-success">Completed</span>
+                                        {% elif project.status == 'in_progress' %}
+                                            <span class="badge bg-warning">In Progress</span>
+                                        {% elif project.status == 'pending' %}
+                                            <span class="badge bg-info">Pending</span>
+                                        {% elif project.status == 'on_hold' %}
+                                            <span class="badge bg-secondary">On Hold</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ project.status|title }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ project.start_date or 'N/A' }}</td>
+                                    <td>{{ project.end_date or 'N/A' }}</td>
+                                    <td>
+                                        <div class="progress" style="height: 8px;">
+                                            {% if project.status == 'completed' %}
+                                                <div class="progress-bar bg-success" style="width: 100%"></div>
+                                            {% elif project.status == 'in_progress' %}
+                                                <div class="progress-bar bg-warning" style="width: 75%"></div>
+                                            {% elif project.status == 'pending' %}
+                                                <div class="progress-bar bg-info" style="width: 25%"></div>
+                                            {% else %}
+                                                <div class="progress-bar bg-secondary" style="width: 0%"></div>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if project.status == 'completed' %}
+                                            <span class="text-success fw-bold">Excellent</span>
+                                        {% elif project.status == 'in_progress' %}
+                                            <span class="text-warning fw-bold">On Track</span>
+                                        {% elif project.status == 'pending' %}
+                                            <span class="text-info fw-bold">Starting</span>
+                                        {% else %}
+                                            <span class="text-secondary fw-bold">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted py-4">
+                                        <i class="fas fa-inbox fa-2x mb-3"></i>
+                                        <p>No recent projects found</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Skills and Competencies -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-star me-2"></i>
+                        Skills Assessment
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-bold">Project Management</span>
+                            <span class="text-primary fw-bold">85%</span>
+                        </div>
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar bg-primary" style="width: 85%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-bold">Technical Skills</span>
+                            <span class="text-success fw-bold">92%</span>
+                        </div>
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar bg-success" style="width: 92%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-bold">Communication</span>
+                            <span class="text-warning fw-bold">78%</span>
+                        </div>
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar bg-warning" style="width: 78%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-bold">Problem Solving</span>
+                            <span class="text-info fw-bold">88%</span>
+                        </div>
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar bg-info" style="width: 88%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-trophy me-2"></i>
+                        Achievements & Recognition
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="achievement-item d-flex align-items-center mb-3">
+                        <div class="achievement-icon bg-warning text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                            <i class="fas fa-medal"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1">Top Performer</h6>
+                            <small class="text-muted">Awarded for completing 5 projects on time</small>
+                        </div>
+                    </div>
+                    
+                    <div class="achievement-item d-flex align-items-center mb-3">
+                        <div class="achievement-icon bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1">Client Satisfaction</h6>
+                            <small class="text-muted">Received 5-star feedback from 3 clients</small>
+                        </div>
+                    </div>
+                    
+                    <div class="achievement-item d-flex align-items-center mb-3">
+                        <div class="achievement-icon bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1">Innovation Award</h6>
+                            <small class="text-muted">Recognized for creative problem-solving approach</small>
+                        </div>
+                    </div>
+                    
+                    <div class="achievement-item d-flex align-items-center">
+                        <div class="achievement-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1">Team Player</h6>
+                            <small class="text-muted">Excellent collaboration with cross-functional teams</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Goals and Objectives -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-bullseye me-2"></i>
+                        Goals & Objectives
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="goal-card text-center p-3 border rounded">
+                                <div class="h4 text-primary mb-2">Q1 2024</div>
+                                <h6>Complete 3 Projects</h6>
+                                <div class="progress mb-2" style="height: 8px;">
+                                    <div class="progress-bar bg-success" style="width: 100%"></div>
+                                </div>
+                                <small class="text-success">Completed ✓</small>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="goal-card text-center p-3 border rounded">
+                                <div class="h4 text-warning mb-2">Q2 2024</div>
+                                <h6>Improve Client Communication</h6>
+                                <div class="progress mb-2" style="height: 8px;">
+                                    <div class="progress-bar bg-warning" style="width: 60%"></div>
+                                </div>
+                                <small class="text-warning">In Progress</small>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="goal-card text-center p-3 border rounded">
+                                <div class="h4 text-info mb-2">Q3 2024</div>
+                                <h6>Learn New Technologies</h6>
+                                <div class="progress mb-2" style="height: 8px;">
+                                    <div class="progress-bar bg-info" style="width: 25%"></div>
+                                </div>
+                                <small class="text-info">Starting</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Performance Chart
+    const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+    const performanceChart = new Chart(performanceCtx, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            datasets: [{
+                label: 'Projects Completed',
+                data: [2, 3, 1, 4, 2, 3],
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Status Distribution Chart
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    const statusChart = new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Completed', 'In Progress', 'Pending', 'On Hold'],
+            datasets: [{
+                data: [{{ completed_projects }}, {{ pending_projects }}, 1, 0],
+                backgroundColor: [
+                    'rgb(75, 192, 192)',
+                    'rgb(255, 205, 86)',
+                    'rgb(54, 162, 235)',
+                    'rgb(201, 203, 207)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    // Export functionality
+    document.getElementById('exportBtn').addEventListener('click', function() {
+        alert('PDF export functionality would be implemented here');
+    });
+});
+</script>
+
+<style>
+@media print {
+    .btn, .d-flex.gap-2 {
+        display: none !important;
+    }
+    
+    .card {
+        border: 1px solid #ddd !important;
+        box-shadow: none !important;
+    }
+}
+
+.achievement-icon {
+    flex-shrink: 0;
+}
+
+.goal-card {
+    transition: transform 0.2s;
+}
+
+.goal-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+</style>
+{% endblock %}
+

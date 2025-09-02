@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block title %}Create Lead - Manager Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="{{ url_for('manager.dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('manager.leads') }}">Leads</a></li>
+                        <li class="breadcrumb-item active">Create Lead</li>
+                    </ol>
+                </div>
+                <h4 class="page-title">Create New Lead</h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="header-title">Lead Information</h4>
+                    <p class="text-muted mb-0">Fill in the details to create a new lead</p>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">Contact Person Name <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="name" name="name" required placeholder="Enter contact person name">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="company" class="form-label">Company Name <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="company" name="company" required placeholder="Enter company name">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
+                                    <input type="email" class="form-control" id="email" name="email" required placeholder="Enter email address">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label">Phone Number <span class="text-danger">*</span></label>
+                                    <input type="tel" class="form-control" id="phone" name="phone" required placeholder="Enter phone number">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="business_type" class="form-label">Business Type <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="business_type" name="business_type" required>
+                                        <option value="">Select Business Type</option>
+                                        <option value="installation">Installation</option>
+                                        <option value="manufacturing">Manufacturing</option>
+                                        <option value="both">Both</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="source" class="form-label">Lead Source <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="source" name="source" required>
+                                        <option value="">Select Source</option>
+                                        <option value="website">Website</option>
+                                        <option value="referral">Referral</option>
+                                        <option value="social_media">Social Media</option>
+                                        <option value="cold_call">Cold Call</option>
+                                        <option value="trade_show">Trade Show</option>
+                                        <option value="advertisement">Advertisement</option>
+                                        <option value="email_campaign">Email Campaign</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="assigned_to" class="form-label">Assign To</label>
+                                    <select class="form-select" id="assigned_to" name="assigned_to">
+                                        <option value="">Select Employee</option>
+                                        {% for employee in employees %}
+                                        <option value="{{ employee.id }}">{{ employee.name }} - {{ employee.department }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <small class="form-text text-muted">Leave blank for auto-assignment</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="priority" class="form-label">Lead Priority</label>
+                                    <select class="form-select" id="priority" name="priority">
+                                        <option value="low">Low</option>
+                                        <option value="medium" selected>Medium</option>
+                                        <option value="high">High</option>
+                                        <option value="urgent">Urgent</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="industry" class="form-label">Industry</label>
+                                    <select class="form-select" id="industry" name="industry">
+                                        <option value="">Select Industry</option>
+                                        <option value="technology">Technology</option>
+                                        <option value="manufacturing">Manufacturing</option>
+                                        <option value="construction">Construction</option>
+                                        <option value="retail">Retail</option>
+                                        <option value="healthcare">Healthcare</option>
+                                        <option value="education">Education</option>
+                                        <option value="finance">Finance</option>
+                                        <option value="real_estate">Real Estate</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="estimated_value" class="form-label">Estimated Value</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" id="estimated_value" name="estimated_value" min="0" step="1000" placeholder="0">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="follow_up_date" class="form-label">Follow-up Date</label>
+                                    <input type="date" class="form-control" id="follow_up_date" name="follow_up_date">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="status" class="form-label">Lead Status</label>
+                                    <select class="form-select" id="status" name="status">
+                                        <option value="new" selected>New</option>
+                                        <option value="contacted">Contacted</option>
+                                        <option value="qualified">Qualified</option>
+                                        <option value="proposal">Proposal Sent</option>
+                                        <option value="negotiation">Negotiation</option>
+                                        <option value="converted">Converted</option>
+                                        <option value="lost">Lost</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label for="notes" class="form-label">Notes <span class="text-danger">*</span></label>
+                                    <textarea class="form-control" id="notes" name="notes" rows="4" required placeholder="Describe the lead, requirements, and any additional information"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label for="requirements" class="form-label">Requirements</label>
+                                    <textarea class="form-control" id="requirements" name="requirements" rows="3" placeholder="Specific requirements or needs of the lead"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-end">
+                            <a href="{{ url_for('manager.leads') }}" class="btn btn-secondary me-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Create Lead</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Set minimum follow-up date to today
+    const today = new Date().toISOString().split('T')[0];
+    $('#follow_up_date').attr('min', today);
+    
+    // Form validation
+    $('form').on('submit', function(e) {
+        let isValid = true;
+        
+        // Check required fields
+        $('input[required], select[required], textarea[required]').each(function() {
+            if (!$(this).val()) {
+                $(this).addClass('is-invalid');
+                isValid = false;
+            } else {
+                $(this).removeClass('is-invalid');
+            }
+        });
+        
+        // Email validation
+        const email = $('#email').val();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (email && !emailRegex.test(email)) {
+            $('#email').addClass('is-invalid');
+            isValid = false;
+        }
+        
+        // Phone validation
+        const phone = $('#phone').val();
+        const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+        if (phone && !phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''))) {
+            $('#phone').addClass('is-invalid');
+            isValid = false;
+        }
+        
+        // Estimated value validation
+        const estimatedValue = parseFloat($('#estimated_value').val());
+        if ($('#estimated_value').val() && estimatedValue < 0) {
+            $('#estimated_value').addClass('is-invalid');
+            isValid = false;
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+            showAlert('Please fill in all required fields correctly.', 'error');
+        }
+    });
+    
+    // Real-time validation
+    $('input, select, textarea').on('blur', function() {
+        if ($(this).hasClass('required') && !$(this).val()) {
+            $(this).addClass('is-invalid');
+        } else {
+            $(this).removeClass('is-invalid');
+        }
+    });
+    
+    // Phone number formatting
+    $('#phone').on('input', function() {
+        let value = $(this).val().replace(/\D/g, '');
+        if (value.length > 0) {
+            if (value.length <= 3) {
+                value = `(${value}`;
+            } else if (value.length <= 6) {
+                value = `(${value.slice(0, 3)}) ${value.slice(3)}`;
+            } else {
+                value = `(${value.slice(0, 3)}) ${value.slice(3, 6)}-${value.slice(6, 10)}`;
+            }
+        }
+        $(this).val(value);
+    });
+    
+    // Auto-assignment logic
+    $('#assigned_to').on('change', function() {
+        if ($(this).val()) {
+            // Show assigned employee info
+            const selectedOption = $(this).find('option:selected');
+            const employeeInfo = selectedOption.text();
+            showAlert(`Lead will be assigned to: ${employeeInfo}`, 'info');
+        }
+    });
+});
+</script>
+{% endblock %}
+

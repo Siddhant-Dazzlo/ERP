@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+
+{% block title %}Create User - Trivanta Edge ERP{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <!-- Page Header -->
+    <div class="bg-white shadow-sm border border-gray-200 rounded-lg p-6 mb-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Create New User</h1>
+                <p class="text-gray-600">Add a new user to the Trivanta Edge ERP system</p>
+            </div>
+            <a href="{{ url_for('admin.users') }}" class="btn-secondary">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Back to Users
+            </a>
+        </div>
+    </div>
+
+    <!-- Create User Form -->
+    <div class="bg-white shadow-sm border border-gray-200 rounded-lg p-6">
+        <form method="POST" class="space-y-6">
+            <!-- Basic Information -->
+            <div>
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Basic Information</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="name" class="form-label">Full Name *</label>
+                        <input type="text" id="name" name="name" required 
+                               class="form-input" placeholder="Enter full name">
+                    </div>
+                    <div>
+                        <label for="email" class="form-label">Email Address *</label>
+                        <input type="email" id="email" name="email" required 
+                               class="form-input" placeholder="Enter email address">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Role and Department -->
+            <div>
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Role & Department</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="role" class="form-label">User Role *</label>
+                        <select id="role" name="role" required class="form-input">
+                            <option value="">Select role</option>
+                            <option value="admin">Administrator</option>
+                            <option value="manager">Manager</option>
+                            <option value="employee">Employee</option>
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">
+                            Admin: Full system access<br>
+                            Manager: Team and project management<br>
+                            Employee: Basic operations and attendance
+                        </p>
+                    </div>
+                    <div>
+                        <label for="department" class="form-label">Department *</label>
+                        <select id="department" name="department" required class="form-input">
+                            <option value="">Select department</option>
+                            <option value="Operations">Operations</option>
+                            <option value="Installation">Installation</option>
+                            <option value="Manufacturing">Manufacturing</option>
+                            <option value="Sales">Sales</option>
+                            <option value="General">General</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security -->
+            <div>
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Security</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="password" class="form-label">Password *</label>
+                        <input type="password" id="password" name="password" required 
+                               class="form-input" placeholder="Enter password">
+                        <p class="text-xs text-gray-500 mt-1">Minimum 6 characters</p>
+                    </div>
+                    <div>
+                        <label for="confirm_password" class="form-label">Confirm Password *</label>
+                        <input type="password" id="confirm_password" name="confirm_password" required 
+                               class="form-input" placeholder="Confirm password">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Settings -->
+            <div>
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Additional Settings</h3>
+                <div class="space-y-4">
+                    <div class="flex items-center">
+                        <input type="checkbox" id="send_welcome_email" name="send_welcome_email" 
+                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <label for="send_welcome_email" class="ml-2 block text-sm text-gray-900">
+                            Send welcome email with login credentials
+                        </label>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="require_password_change" name="require_password_change" 
+                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <label for="require_password_change" class="ml-2 block text-sm text-gray-900">
+                            Require password change on first login
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200">
+                <a href="{{ url_for('admin.users') }}" class="btn-secondary">Cancel</a>
+                <button type="submit" class="btn-primary">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    Create User
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Help Information -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <div class="ml-3">
+                <h3 class="text-sm font-medium text-blue-800">User Creation Guidelines</h3>
+                <div class="mt-2 text-sm text-blue-700">
+                    <ul class="list-disc list-inside space-y-1">
+                        <li><strong>Administrators:</strong> Full system access, user management, analytics</li>
+                        <li><strong>Managers:</strong> Team management, project oversight, attendance management</li>
+                        <li><strong>Employees:</strong> Basic operations, attendance, lead management</li>
+                        <li>Department assignment helps with project allocation and reporting</li>
+                        <li>Passwords should be secure and unique for each user</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Password confirmation validation
+    document.getElementById('confirm_password').addEventListener('input', function() {
+        const password = document.getElementById('password').value;
+        const confirmPassword = this.value;
+        
+        if (password !== confirmPassword) {
+            this.setCustomValidity('Passwords do not match');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+
+    // Password strength validation
+    document.getElementById('password').addEventListener('input', function() {
+        const password = this.value;
+        
+        if (password.length < 6) {
+            this.setCustomValidity('Password must be at least 6 characters long');
+        } else {
+            this.setCustomValidity('');
+        }
+        
+        // Trigger confirm password validation
+        document.getElementById('confirm_password').dispatchEvent(new Event('input'));
+    });
+
+    // Form submission validation
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+        
+        if (password !== confirmPassword) {
+            e.preventDefault();
+            alert('Passwords do not match. Please correct and try again.');
+            return false;
+        }
+        
+        if (password.length < 6) {
+            e.preventDefault();
+            alert('Password must be at least 6 characters long.');
+            return false;
+        }
+    });
+
+    // Role-based department suggestions
+    document.getElementById('role').addEventListener('change', function() {
+        const role = this.value;
+        const departmentSelect = document.getElementById('department');
+        
+        // Reset department selection
+        departmentSelect.value = '';
+        
+        if (role === 'manager') {
+            // Managers typically work in Operations or Sales
+            departmentSelect.innerHTML = `
+                <option value="">Select department</option>
+                <option value="Operations">Operations</option>
+                <option value="Sales">Sales</option>
+                <option value="General">General</option>
+            `;
+        } else if (role === 'employee') {
+            // Employees work in specific operational departments
+            departmentSelect.innerHTML = `
+                <option value="">Select department</option>
+                <option value="Installation">Installation</option>
+                <option value="Manufacturing">Manufacturing</option>
+                <option value="Sales">Sales</option>
+                <option value="Operations">Operations</option>
+                <option value="General">General</option>
+            `;
+        } else {
+            // Admins can work in any department
+            departmentSelect.innerHTML = `
+                <option value="">Select department</option>
+                <option value="Operations">Operations</option>
+                <option value="Installation">Installation</option>
+                <option value="Manufacturing">Manufacturing</option>
+                <option value="Sales">Sales</option>
+                <option value="General">General</option>
+            `;
+        }
+    });
+</script>
+{% endblock %}
+

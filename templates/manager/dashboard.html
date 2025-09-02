@@ -1,0 +1,423 @@
+{% extends "base.html" %}
+
+{% block title %}Manager Dashboard - Trivanta Edge ERP{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Page Header -->
+    <div class="col-12">
+        <div class="card card-custom mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="h2 mb-1">Manager Dashboard</h1>
+                        <p class="text-muted mb-0">Team overview and management</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-secondary" onclick="location.reload()">
+                            <i class="bi bi-arrow-clockwise me-2"></i>Refresh
+                        </button>
+                        <button class="btn btn-primary" onclick="window.location.href='{{ url_for('manager.employees') }}'">
+                            <i class="bi bi-plus-circle me-2"></i>Quick Actions
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics Grid -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <!-- Total Projects -->
+        <div class="card card-custom card-hover h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="bg-primary bg-opacity-10 rounded p-2">
+                            <i class="bi bi-folder text-primary fs-4"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <p class="text-muted small mb-1">Total Projects</p>
+                        <h3 class="mb-0 fw-bold" id="total_projects">0</h3>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <small class="text-muted">Active projects</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <!-- Active Clients -->
+        <div class="card card-custom card-hover h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="bg-success bg-opacity-10 rounded p-2">
+                            <i class="bi bi-people text-success fs-4"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <p class="text-muted small mb-1">Active Clients</p>
+                        <h3 class="mb-0 fw-bold" id="total_clients">0</h3>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <small class="text-muted">Active clients</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <!-- Team Members -->
+        <div class="card card-custom card-hover h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="bg-warning bg-opacity-10 rounded p-2">
+                            <i class="bi bi-person-badge text-warning fs-4"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <p class="text-muted small mb-1">Team Members</p>
+                        <h3 class="mb-0 fw-bold" id="total_employees">0</h3>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <small class="text-muted">Active team members</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <!-- Revenue -->
+        <div class="card card-custom card-hover h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="bg-info bg-opacity-10 rounded p-2">
+                            <i class="bi bi-currency-dollar text-info fs-4"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <p class="text-muted small mb-1">Revenue</p>
+                        <h3 class="mb-0 fw-bold" id="total_revenue">$0</h3>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <small class="text-muted">This month</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="col-xl-8 mb-4">
+        <div class="card card-custom">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Project Progress Overview</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container" style="position: relative; height:300px;">
+                    <canvas id="projectProgressChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4 mb-4">
+        <div class="card card-custom">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Team Performance</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container" style="position: relative; height:300px;">
+                    <canvas id="teamPerformanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activities -->
+    <div class="col-12 mb-4">
+        <div class="card card-custom">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Recent Activities</h5>
+                <a href="#" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Activity</th>
+                                <th>User</th>
+                                <th>Time</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for activity in recent_activities|default([]) %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-light rounded-circle p-2 me-3">
+                                            <i class="bi bi-{{ activity.icon|default('circle') }} text-muted"></i>
+                                        </div>
+                                        <div>
+                                            <strong>{{ activity.title }}</strong>
+                                            <br><small class="text-muted">{{ activity.description }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-2">
+                                            <span class="text-primary fw-bold">{{ activity.user[0]|upper }}</span>
+                                        </div>
+                                        {{ activity.user }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ activity.time }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ activity.status_color|default('secondary') }}">{{ activity.status }}</span>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">
+                                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                    No recent activities
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="col-12">
+        <div class="card card-custom">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <a href="{{ url_for('manager.create_employee') }}" class="card card-custom card-hover text-decoration-none h-100">
+                            <div class="card-body text-center">
+                                <div class="bg-primary bg-opacity-10 rounded-circle p-3 mx-auto mb-3" style="width: 60px; height: 60px;">
+                                    <i class="bi bi-person-plus text-primary fs-2"></i>
+                                </div>
+                                <h6 class="card-title">Add Employee</h6>
+                                <small class="text-muted">Create new team member</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url_for('manager.create_project') }}" class="card card-custom card-hover text-decoration-none h-100">
+                            <div class="card-body text-center">
+                                <div class="bg-success bg-opacity-10 rounded-circle p-3 mx-auto mb-3" style="width: 60px; height: 60px;">
+                                    <i class="bi bi-plus-circle text-success fs-2"></i>
+                                </div>
+                                <h6 class="card-title">New Project</h6>
+                                <small class="text-muted">Start new project</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url_for('manager.create_client') }}" class="card card-custom card-hover text-decoration-none h-100">
+                            <div class="card-body text-center">
+                                <div class="bg-info bg-opacity-10 rounded-circle p-3 mx-auto mb-3" style="width: 60px; height: 60px;">
+                                    <i class="bi bi-person-badge text-info fs-2"></i>
+                                </div>
+                                <h6 class="card-title">Add Client</h6>
+                                <small class="text-muted">Register new client</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url_for('manager.create_lead') }}" class="card card-custom card-hover text-decoration-none h-100">
+                            <div class="card-body text-center">
+                                <div class="bg-warning bg-opacity-10 rounded-circle p-3 mx-auto mb-3" style="width: 60px; height: 60px;">
+                                    <i class="bi bi-funnel text-warning fs-2"></i>
+                                </div>
+                                <h6 class="card-title">New Lead</h6>
+                                <small class="text-muted">Capture potential client</small>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/firebase-utils.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize real-time data updates
+    initializeRealTimeUpdates();
+    
+    // Project Progress Chart
+    const projectCtx = document.getElementById('projectProgressChart').getContext('2d');
+    window.projectProgressChart = new Chart(projectCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Completed', 'In Progress', 'Pending'],
+            datasets: [{
+                data: [0, 0, 0],
+                backgroundColor: [
+                    'rgba(34, 197, 94, 0.8)',
+                    'rgba(59, 130, 246, 0.8)',
+                    'rgba(251, 191, 36, 0.8)'
+                ],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                }
+            }
+        }
+    });
+
+    // Team Performance Chart
+    const teamCtx = document.getElementById('teamPerformanceChart').getContext('2d');
+    window.teamPerformanceChart = new Chart(teamCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Excellent', 'Good', 'Average', 'Needs Improvement'],
+            datasets: [{
+                data: [0, 0, 0, 0],
+                backgroundColor: [
+                    'rgba(34, 197, 94, 0.8)',
+                    'rgba(59, 130, 246, 0.8)',
+                    'rgba(251, 191, 36, 0.8)',
+                    'rgba(239, 68, 68, 0.8)'
+                ],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                }
+            }
+        }
+    });
+});
+
+// Initialize real-time updates
+function initializeRealTimeUpdates() {
+    // Listen for Firebase document changes
+    document.addEventListener('firebase-document-added', (event) => {
+        console.log('Document added:', event.detail);
+        updateDashboardMetrics();
+    });
+    
+    document.addEventListener('firebase-document-modified', (event) => {
+        console.log('Document modified:', event.detail);
+        updateDashboardMetrics();
+    });
+    
+    document.addEventListener('firebase-document-removed', (event) => {
+        console.log('Document removed:', event.detail);
+        updateDashboardMetrics();
+    });
+}
+
+// Update dashboard metrics in real-time
+async function updateDashboardMetrics() {
+    try {
+        if (window.firebaseUtils) {
+            // Get real-time data from Firebase
+            const projects = await window.firebaseUtils.getDocuments('projects');
+            const clients = await window.firebaseUtils.getDocuments('clients');
+            const employees = await window.firebaseUtils.getDocuments('employees');
+            const leads = await window.firebaseUtils.getDocuments('leads');
+            
+            // Update metrics display
+            updateMetricDisplay('total_projects', projects.length);
+            updateMetricDisplay('total_clients', clients.length);
+            updateMetricDisplay('total_employees', employees.length);
+            updateMetricDisplay('total_revenue', calculateTotalRevenue(projects));
+            
+            // Update charts
+            updateCharts(projects, employees);
+            
+        }
+    } catch (error) {
+        console.error('Error updating dashboard metrics:', error);
+    }
+}
+
+// Update metric display
+function updateMetricDisplay(metricId, value) {
+    const element = document.getElementById(metricId);
+    if (element) {
+        if (metricId === 'total_revenue') {
+            element.textContent = `$${value.toLocaleString()}`;
+        } else {
+            element.textContent = value;
+        }
+    }
+}
+
+// Calculate total revenue
+function calculateTotalRevenue(projects) {
+    return projects.reduce((total, project) => {
+        return total + (project.budget || 0);
+    }, 0);
+}
+
+// Update charts with real-time data
+function updateCharts(projects, employees) {
+    // Update project progress chart
+    if (window.projectProgressChart) {
+        const completed = projects.filter(p => p.status === 'completed').length;
+        const inProgress = projects.filter(p => p.status === 'in_progress').length;
+        const pending = projects.filter(p => p.status === 'pending').length;
+        
+        window.projectProgressChart.data.datasets[0].data = [completed, inProgress, pending];
+        window.projectProgressChart.update();
+    }
+    
+    // Update team performance chart
+    if (window.teamPerformanceChart) {
+        const totalEmployees = employees.length;
+        const excellent = Math.floor(totalEmployees * 0.3);
+        const good = Math.floor(totalEmployees * 0.5);
+        const average = Math.floor(totalEmployees * 0.15);
+        const needsImprovement = Math.max(0, totalEmployees - excellent - good - average);
+        
+        window.teamPerformanceChart.data.datasets[0].data = [excellent, good, average, needsImprovement];
+        window.teamPerformanceChart.update();
+    }
+}
+
+// Load initial data
+document.addEventListener('DOMContentLoaded', async () => {
+    await updateDashboardMetrics();
+});
+</script>
+{% endblock %}

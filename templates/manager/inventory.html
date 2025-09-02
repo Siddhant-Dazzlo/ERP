@@ -1,0 +1,696 @@
+{% extends "base.html" %}
+
+{% block title %}Inventory Management - Manager Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="{{ url_for('manager.dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Inventory</li>
+                    </ol>
+                </div>
+                <h4 class="page-title">Inventory Management</h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="header-title">Inventory Overview</h4>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-success" onclick="addInventoryItem()">
+                            <i class="mdi mdi-plus"></i> Add Item
+                        </button>
+                        <button type="button" class="btn btn-info" onclick="exportInventory()">
+                            <i class="mdi mdi-download"></i> Export
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Inventory Statistics -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body text-center">
+                                    <h4 class="mb-0" id="totalItems">0</h4>
+                                    <small>Total Items</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-warning text-white">
+                                <div class="card-body text-center">
+                                    <h4 class="mb-0" id="lowStockItems">0</h4>
+                                    <small>Low Stock</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-danger text-white">
+                                <div class="card-body text-center">
+                                    <h4 class="mb-0" id="outOfStockItems">0</h4>
+                                    <small>Out of Stock</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body text-center">
+                                    <h4 class="mb-0" id="totalValue">$0</h4>
+                                    <small>Total Value</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <select class="form-select" id="categoryFilter">
+                                <option value="">All Categories</option>
+                                <option value="equipment">Equipment</option>
+                                <option value="materials">Materials</option>
+                                <option value="tools">Tools</option>
+                                <option value="supplies">Supplies</option>
+                                <option value="electronics">Electronics</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="statusFilter">
+                                <option value="">All Statuses</option>
+                                <option value="in_stock">In Stock</option>
+                                <option value="low_stock">Low Stock</option>
+                                <option value="out_of_stock">Out of Stock</option>
+                                <option value="discontinued">Discontinued</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="locationFilter">
+                                <option value="">All Locations</option>
+                                <option value="warehouse">Warehouse</option>
+                                <option value="office">Office</option>
+                                <option value="field">Field</option>
+                                <option value="vehicle">Vehicle</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" id="searchInput" placeholder="Search inventory...">
+                        </div>
+                    </div>
+
+                    <!-- Inventory Table -->
+                    <div class="table-responsive">
+                        <table class="table table-centered table-hover mb-0" id="inventoryTable">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Category</th>
+                                    <th>SKU</th>
+                                    <th>Quantity</th>
+                                    <th>Unit Price</th>
+                                    <th>Total Value</th>
+                                    <th>Location</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventoryTableBody">
+                                <!-- Inventory items will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div id="emptyState" class="text-center py-5" style="display: none;">
+                        <div class="avatar-lg mx-auto mb-3">
+                            <div class="avatar-title bg-light rounded-circle">
+                                <i class="mdi mdi-package-variant text-muted" style="font-size: 3rem;"></i>
+                            </div>
+                        </div>
+                        <h4 class="text-muted">No Inventory Items Found</h4>
+                        <p class="text-muted mb-3">Start by adding your first inventory item to track stock levels.</p>
+                        <button type="button" class="btn btn-primary" onclick="addInventoryItem()">
+                            <i class="mdi mdi-plus"></i> Add Your First Item
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Inventory Item Modal -->
+<div class="modal fade" id="inventoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="inventoryModalTitle">Add Inventory Item</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="inventoryForm">
+                    <input type="hidden" id="itemId" name="item_id">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label for="itemName" class="form-label">Item Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="itemName" name="name" required placeholder="Enter item name">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="itemSKU" class="form-label">SKU</label>
+                                <input type="text" class="form-control" id="itemSKU" name="sku" placeholder="Enter SKU">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="itemCategory" class="form-label">Category <span class="text-danger">*</span></label>
+                                <select class="form-select" id="itemCategory" name="category" required>
+                                    <option value="">Select Category</option>
+                                    <option value="equipment">Equipment</option>
+                                    <option value="materials">Materials</option>
+                                    <option value="tools">Tools</option>
+                                    <option value="supplies">Supplies</option>
+                                    <option value="electronics">Electronics</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="itemLocation" class="form-label">Location <span class="text-danger">*</span></label>
+                                <select class="form-select" id="itemLocation" name="location" required>
+                                    <option value="">Select Location</option>
+                                    <option value="warehouse">Warehouse</option>
+                                    <option value="office">Office</option>
+                                    <option value="field">Field</option>
+                                    <option value="vehicle">Vehicle</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="itemQuantity" class="form-label">Quantity <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="itemQuantity" name="quantity" required min="0" step="1" placeholder="0">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="itemUnitPrice" class="form-label">Unit Price <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" id="itemUnitPrice" name="unit_price" required min="0" step="0.01" placeholder="0.00">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="itemMinStock" class="form-label">Min Stock Level</label>
+                                <input type="number" class="form-control" id="itemMinStock" name="min_stock" min="0" step="1" placeholder="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="itemSupplier" class="form-label">Supplier</label>
+                                <input type="text" class="form-control" id="itemSupplier" name="supplier" placeholder="Enter supplier name">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="itemReorderPoint" class="form-label">Reorder Point</label>
+                                <input type="number" class="form-control" id="itemReorderPoint" name="reorder_point" min="0" step="1" placeholder="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="itemDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="itemDescription" name="description" rows="3" placeholder="Describe the item, specifications, or notes"></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="itemTags" class="form-label">Tags</label>
+                                <input type="text" class="form-control" id="itemTags" name="tags" placeholder="Enter tags separated by commas">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="itemStatus" class="form-label">Status</label>
+                                <select class="form-select" id="itemStatus" name="status">
+                                    <option value="in_stock">In Stock</option>
+                                    <option value="low_stock">Low Stock</option>
+                                    <option value="out_of_stock">Out of Stock</option>
+                                    <option value="discontinued">Discontinued</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveInventoryItem()">Save Item</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Inventory Movement Modal -->
+<div class="modal fade" id="movementModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Record Movement</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="movementForm">
+                    <input type="hidden" id="movementItemId" name="item_id">
+                    <div class="mb-3">
+                        <label for="movementType" class="form-label">Movement Type <span class="text-danger">*</span></label>
+                        <select class="form-select" id="movementType" name="type" required>
+                            <option value="">Select Type</option>
+                            <option value="in">Stock In</option>
+                            <option value="out">Stock Out</option>
+                            <option value="adjustment">Adjustment</option>
+                            <option value="transfer">Transfer</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="movementQuantity" class="form-label">Quantity <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="movementQuantity" name="quantity" required min="1" step="1" placeholder="0">
+                    </div>
+                    <div class="mb-3">
+                        <label for="movementReason" class="form-label">Reason</label>
+                        <textarea class="form-control" id="movementReason" name="reason" rows="3" placeholder="Enter reason for movement"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="movementReference" class="form-label">Reference</label>
+                        <input type="text" class="form-control" id="movementReference" name="reference" placeholder="PO number, invoice, etc.">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveMovement()">Record Movement</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Item Details Modal -->
+<div class="modal fade" id="itemDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Item Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="itemDetailsContent">
+                <!-- Content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="editItemFromModal()">Edit Item</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentItemId = null;
+let inventory = [];
+
+$(document).ready(function() {
+    // Initialize filters
+    initializeFilters();
+    
+    // Search functionality
+    $('#searchInput').on('keyup', function() {
+        filterInventory();
+    });
+    
+    // Load initial data
+    loadInventory();
+});
+
+function initializeFilters() {
+    // Category filter
+    $('#categoryFilter').on('change', function() {
+        filterInventory();
+    });
+    
+    // Status filter
+    $('#statusFilter').on('change', function() {
+        filterInventory();
+    });
+    
+    // Location filter
+    $('#locationFilter').on('change', function() {
+        filterInventory();
+    });
+}
+
+function loadInventory() {
+    // Load inventory via AJAX
+    $.get('/manager/api/inventory', function(data) {
+        if (data.error) {
+            showAlert('Error loading inventory', 'error');
+            return;
+        }
+        
+        inventory = data;
+        renderInventory();
+        updateStatistics();
+    });
+}
+
+function renderInventory() {
+    const tbody = $('#inventoryTableBody');
+    tbody.empty();
+    
+    if (inventory.length === 0) {
+        $('#emptyState').show();
+        return;
+    }
+    
+    $('#emptyState').hide();
+    
+    inventory.forEach(item => {
+        const totalValue = (item.quantity * item.unit_price).toFixed(2);
+        const status = getItemStatus(item.quantity, item.min_stock);
+        
+        const row = `
+            <tr data-category="${item.category}" data-status="${status}" data-location="${item.location}">
+                <td>
+                    <div class="d-flex align-items-center">
+                        <div class="avatar-sm bg-light rounded-circle me-2">
+                            <span class="avatar-title text-primary fw-bold">
+                                ${item.name[0].toUpperCase()}
+                            </span>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">${item.name}</h6>
+                            <small class="text-muted">${item.sku || 'No SKU'}</small>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <span class="badge bg-light text-dark">${item.category}</span>
+                </td>
+                <td>
+                    <code>${item.sku || 'N/A'}</code>
+                </td>
+                <td>
+                    <strong>${item.quantity}</strong>
+                    ${item.min_stock && item.quantity <= item.min_stock ? 
+                        '<br><small class="text-danger">Low Stock</small>' : ''}
+                </td>
+                <td>
+                    <strong>$${item.unit_price}</strong>
+                </td>
+                <td>
+                    <strong class="text-success">$${totalValue}</strong>
+                </td>
+                <td>
+                    <span class="badge bg-info">${item.location}</span>
+                </td>
+                <td>
+                    <span class="badge bg-${getStatusColor(status)}">${status.replace('_', ' ')}</span>
+                </td>
+                <td>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
+                            Actions
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="viewItem('${item.id}')">
+                                <i class="mdi mdi-eye"></i> View Details
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" onclick="editItem('${item.id}')">
+                                <i class="mdi mdi-pencil"></i> Edit
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-success" href="#" onclick="recordMovement('${item.id}', 'in')">
+                                <i class="mdi mdi-plus"></i> Stock In
+                            </a></li>
+                            <li><a class="dropdown-item text-warning" href="#" onclick="recordMovement('${item.id}', 'out')">
+                                <i class="mdi mdi-minus"></i> Stock Out
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#" onclick="deleteItem('${item.id}')">
+                                <i class="mdi mdi-delete"></i> Delete
+                            </a></li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+        `;
+        tbody.append(row);
+    });
+}
+
+function updateStatistics() {
+    $('#totalItems').text(inventory.length);
+    $('#lowStockItems').text(inventory.filter(item => 
+        item.min_stock && item.quantity <= item.min_stock
+    ).length);
+    $('#outOfStockItems').text(inventory.filter(item => 
+        item.quantity === 0
+    ).length);
+    
+    const totalValue = inventory.reduce((sum, item) => 
+        sum + (item.quantity * item.unit_price), 0
+    );
+    $('#totalValue').text('$' + totalValue.toFixed(2));
+}
+
+function filterInventory() {
+    const searchTerm = $('#searchInput').val().toLowerCase();
+    const categoryFilter = $('#categoryFilter').val();
+    const statusFilter = $('#statusFilter').val();
+    const locationFilter = $('#locationFilter').val();
+    
+    $('#inventoryTableBody tr').each(function() {
+        const row = $(this);
+        const category = row.data('category');
+        const status = row.data('status');
+        const location = row.data('location');
+        const text = row.text().toLowerCase();
+        
+        let show = true;
+        
+        // Search filter
+        if (searchTerm && !text.includes(searchTerm)) {
+            show = false;
+        }
+        
+        // Category filter
+        if (categoryFilter && category !== categoryFilter) {
+            show = false;
+        }
+        
+        // Status filter
+        if (statusFilter && status !== statusFilter) {
+            show = false;
+        }
+        
+        // Location filter
+        if (locationFilter && location !== locationFilter) {
+            show = false;
+        }
+        
+        row.toggle(show);
+    });
+}
+
+function addInventoryItem() {
+    currentItemId = null;
+    $('#inventoryModalTitle').text('Add Inventory Item');
+    $('#inventoryForm')[0].reset();
+    $('#inventoryModal').modal('show');
+}
+
+function editItem(itemId) {
+    currentItemId = itemId;
+    const item = inventory.find(i => i.id === itemId);
+    if (!item) return;
+    
+    $('#inventoryModalTitle').text('Edit Inventory Item');
+    $('#itemId').val(item.id);
+    $('#itemName').val(item.name);
+    $('#itemSKU').val(item.sku || '');
+    $('#itemCategory').val(item.category);
+    $('#itemLocation').val(item.location);
+    $('#itemQuantity').val(item.quantity);
+    $('#itemUnitPrice').val(item.unit_price);
+    $('#itemMinStock').val(item.min_stock || '');
+    $('#itemSupplier').val(item.supplier || '');
+    $('#itemReorderPoint').val(item.reorder_point || '');
+    $('#itemDescription').val(item.description || '');
+    $('#itemTags').val(item.tags || '');
+    $('#itemStatus').val(item.status || 'in_stock');
+    
+    $('#inventoryModal').modal('show');
+}
+
+function saveInventoryItem() {
+    const formData = $('#inventoryForm').serialize();
+    
+    if (currentItemId) {
+        // Update existing item
+        $.post(`/manager/api/inventory/${currentItemId}`, formData, function(response) {
+            if (response.success) {
+                showAlert('Inventory item updated successfully', 'success');
+                $('#inventoryModal').modal('hide');
+                loadInventory();
+            } else {
+                showAlert('Error updating inventory item', 'error');
+            }
+        });
+    } else {
+        // Create new item
+        $.post('/manager/api/inventory', formData, function(response) {
+            if (response.success) {
+                showAlert('Inventory item created successfully', 'success');
+                $('#inventoryModal').modal('hide');
+                loadInventory();
+            } else {
+                showAlert('Error creating inventory item', 'error');
+            }
+        });
+    }
+}
+
+function recordMovement(itemId, type) {
+    currentItemId = itemId;
+    $('#movementItemId').val(itemId);
+    $('#movementType').val(type);
+    $('#movementModal').modal('show');
+}
+
+function saveMovement() {
+    const formData = $('#movementForm').serialize();
+    
+    $.post('/manager/api/inventory/movement', formData, function(response) {
+        if (response.success) {
+            showAlert('Movement recorded successfully', 'success');
+            $('#movementModal').modal('hide');
+            loadInventory();
+        } else {
+            showAlert('Error recording movement', 'error');
+        }
+    });
+}
+
+function viewItem(itemId) {
+    const item = inventory.find(i => i.id === itemId);
+    if (!item) return;
+    
+    const totalValue = (item.quantity * item.unit_price).toFixed(2);
+    const status = getItemStatus(item.quantity, item.min_stock);
+    
+    const modalContent = `
+        <div class="row">
+            <div class="col-md-6">
+                <h6>Item Information</h6>
+                <p><strong>Name:</strong> ${item.name}</p>
+                <p><strong>SKU:</strong> ${item.sku || 'N/A'}</p>
+                <p><strong>Category:</strong> ${item.category}</p>
+                <p><strong>Status:</strong> ${status}</p>
+            </div>
+            <div class="col-md-6">
+                <h6>Stock Details</h6>
+                <p><strong>Quantity:</strong> ${item.quantity}</p>
+                <p><strong>Unit Price:</strong> $${item.unit_price}</p>
+                <p><strong>Total Value:</strong> $${totalValue}</p>
+                <p><strong>Min Stock:</strong> ${item.min_stock || 'Not set'}</p>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <h6>Location & Supplier</h6>
+                <p><strong>Location:</strong> ${item.location}</p>
+                <p><strong>Supplier:</strong> ${item.supplier || 'N/A'}</p>
+                <p><strong>Reorder Point:</strong> ${item.reorder_point || 'Not set'}</p>
+            </div>
+            <div class="col-md-6">
+                <h6>Additional Info</h6>
+                <p><strong>Tags:</strong> ${item.tags || 'None'}</p>
+                <p><strong>Description:</strong> ${item.description || 'No description available'}</p>
+            </div>
+        </div>
+    `;
+    
+    $('#itemDetailsContent').html(modalContent);
+    $('#itemDetailsModal').modal('show');
+}
+
+function deleteItem(itemId) {
+    if (confirm('Are you sure you want to delete this inventory item? This action cannot be undone.')) {
+        $.post(`/manager/api/inventory/${itemId}/delete`, function(response) {
+            if (response.success) {
+                showAlert('Inventory item deleted successfully', 'success');
+                loadInventory();
+            } else {
+                showAlert('Error deleting inventory item', 'error');
+            }
+        });
+    }
+}
+
+function editItemFromModal() {
+    $('#itemDetailsModal').modal('hide');
+    if (currentItemId) {
+        editItem(currentItemId);
+    }
+}
+
+function exportInventory() {
+    // Create download link for CSV export
+    const url = '/manager/api/inventory/export';
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'inventory_export.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function getItemStatus(quantity, minStock) {
+    if (quantity === 0) return 'out_of_stock';
+    if (minStock && quantity <= minStock) return 'low_stock';
+    return 'in_stock';
+}
+
+function getStatusColor(status) {
+    const colors = {
+        'in_stock': 'success',
+        'low_stock': 'warning',
+        'out_of_stock': 'danger',
+        'discontinued': 'secondary'
+    };
+    return colors[status] || 'secondary';
+}
+</script>
+{% endblock %}
+

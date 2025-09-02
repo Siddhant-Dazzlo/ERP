@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}Create Lead - Employee Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">Create New Lead</h1>
+                <a href="{{ url_for('employee.leads') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Back to Leads
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-user-plus me-2"></i>
+                        Lead Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="name" class="form-label">Full Name *</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">Email Address *</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="phone" class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" id="phone" name="phone">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="company" class="form-label">Company Name</label>
+                                <input type="text" class="form-control" id="company" name="company">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="business_type" class="form-label">Business Type</label>
+                                <select class="form-select" id="business_type" name="business_type">
+                                    <option value="">Select Business Type</option>
+                                    <option value="technology">Technology</option>
+                                    <option value="healthcare">Healthcare</option>
+                                    <option value="finance">Finance</option>
+                                    <option value="retail">Retail</option>
+                                    <option value="manufacturing">Manufacturing</option>
+                                    <option value="education">Education</option>
+                                    <option value="consulting">Consulting</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="source" class="form-label">Lead Source</label>
+                                <select class="form-select" id="source" name="source">
+                                    <option value="">Select Source</option>
+                                    <option value="website">Website</option>
+                                    <option value="referral">Referral</option>
+                                    <option value="social_media">Social Media</option>
+                                    <option value="cold_call">Cold Call</option>
+                                    <option value="email_campaign">Email Campaign</option>
+                                    <option value="trade_show">Trade Show</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Notes & Requirements</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="4" 
+                                      placeholder="Describe the lead's requirements, budget, timeline, or any other relevant information..."></textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{{ url_for('employee.leads') }}" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>
+                                Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>
+                                Create Lead
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        Tips for Better Leads
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-primary">
+                            <i class="fas fa-check-circle me-2"></i>
+                            Complete Information
+                        </h6>
+                        <p class="small text-muted">Fill in as many fields as possible to increase conversion chances.</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="text-primary">
+                            <i class="fas fa-phone me-2"></i>
+                            Follow Up Quickly
+                        </h6>
+                        <p class="small text-muted">Contact leads within 24 hours for best results.</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="text-primary">
+                            <i class="fas fa-notes-medical me-2"></i>
+                            Detailed Notes
+                        </h6>
+                        <p class="small text-muted">Include specific requirements, budget, and timeline in notes.</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="text-primary">
+                            <i class="fas fa-tag me-2"></i>
+                            Proper Categorization
+                        </h6>
+                        <p class="small text-muted">Select appropriate business type and source for better tracking.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Lead Quality Score
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center">
+                        <div class="h2 text-primary mb-2" id="qualityScore">0%</div>
+                        <div class="progress mb-2" style="height: 8px;">
+                            <div class="progress-bar" id="qualityBar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <small class="text-muted">Complete more fields to improve score</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Lead quality score calculator
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const inputs = form.querySelectorAll('input, select, textarea');
+    const qualityScore = document.getElementById('qualityScore');
+    const qualityBar = document.getElementById('qualityBar');
+    
+    function calculateQualityScore() {
+        let filledFields = 0;
+        let totalFields = inputs.length;
+        
+        inputs.forEach(input => {
+            if (input.value.trim() !== '') {
+                filledFields++;
+            }
+        });
+        
+        const score = Math.round((filledFields / totalFields) * 100);
+        qualityScore.textContent = score + '%';
+        qualityBar.style.width = score + '%';
+        
+        if (score < 50) {
+            qualityBar.className = 'progress-bar bg-danger';
+        } else if (score < 80) {
+            qualityBar.className = 'progress-bar bg-warning';
+        } else {
+            qualityBar.className = 'progress-bar bg-success';
+        }
+    }
+    
+    inputs.forEach(input => {
+        input.addEventListener('input', calculateQualityScore);
+        input.addEventListener('change', calculateQualityScore);
+    });
+    
+    // Initial calculation
+    calculateQualityScore();
+});
+</script>
+{% endblock %}
+

@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+
+{% block title %}Leads - Employee Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">Lead Management</h1>
+                <a href="{{ url_for('employee.create_lead') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>
+                    Create New Lead
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lead Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Total Leads</h6>
+                            <h3 class="mb-0">{{ leads|length }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-users fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Converted</h6>
+                            <h3 class="mb-0">{{ leads|selectattr('status', 'equalto', 'converted')|list|length }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">In Progress</h6>
+                            <h3 class="mb-0">{{ leads|selectattr('status', 'equalto', 'in_progress')|list|length }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-clock fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">New</h6>
+                            <h3 class="mb-0">{{ leads|selectattr('status', 'equalto', 'new')|list|length }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-star fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leads Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        My Assigned Leads
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Company</th>
+                                    <th>Contact</th>
+                                    <th>Business Type</th>
+                                    <th>Source</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lead in leads %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm bg-primary rounded-circle d-flex align-items-center justify-content-center me-3">
+                                                <span class="text-white fw-bold">{{ lead.name[0]|upper }}</span>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold">{{ lead.name }}</div>
+                                                <small class="text-muted">{{ lead.email }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold">{{ lead.company or 'N/A' }}</span>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <div>{{ lead.phone or 'N/A' }}</div>
+                                            <small class="text-muted">{{ lead.email }}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark">{{ lead.business_type or 'N/A' }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ lead.source or 'N/A' }}</span>
+                                    </td>
+                                    <td>
+                                        {% if lead.status == 'new' %}
+                                            <span class="badge bg-info">New</span>
+                                        {% elif lead.status == 'in_progress' %}
+                                            <span class="badge bg-warning">In Progress</span>
+                                        {% elif lead.status == 'converted' %}
+                                            <span class="badge bg-success">Converted</span>
+                                        {% elif lead.status == 'lost' %}
+                                            <span class="badge bg-danger">Lost</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ lead.status|title }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            {{ lead.created_at|default('N/A') }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#leadModal{{ lead.id }}">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <a href="#" class="btn btn-sm btn-outline-success">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-info">
+                                                <i class="fas fa-phone"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Lead Detail Modal -->
+                                <div class="modal fade" id="leadModal{{ lead.id }}" tabindex="-1">
+                                    <div class="modal-dialog modal-lg">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Lead Details - {{ lead.name }}</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <h6>Contact Information</h6>
+                                                        <p><strong>Name:</strong> {{ lead.name }}</p>
+                                                        <p><strong>Email:</strong> {{ lead.email }}</p>
+                                                        <p><strong>Phone:</strong> {{ lead.phone or 'N/A' }}</p>
+                                                        <p><strong>Company:</strong> {{ lead.company or 'N/A' }}</p>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <h6>Business Details</h6>
+                                                        <p><strong>Business Type:</strong> {{ lead.business_type or 'N/A' }}</p>
+                                                        <p><strong>Source:</strong> {{ lead.source or 'N/A' }}</p>
+                                                        <p><strong>Status:</strong> 
+                                                            {% if lead.status == 'new' %}
+                                                                <span class="badge bg-info">New</span>
+                                                            {% elif lead.status == 'in_progress' %}
+                                                                <span class="badge bg-warning">In Progress</span>
+                                                            {% elif lead.status == 'converted' %}
+                                                                <span class="badge bg-success">Converted</span>
+                                                            {% elif lead.status == 'lost' %}
+                                                                <span class="badge bg-danger">Lost</span>
+                                                            {% else %}
+                                                                <span class="badge bg-secondary">{{ lead.status|title }}</span>
+                                                            {% endif %}
+                                                        </p>
+                                                        <p><strong>Created:</strong> {{ lead.created_at|default('N/A') }}</p>
+                                                    </div>
+                                                </div>
+                                                {% if lead.notes %}
+                                                <div class="row mt-3">
+                                                    <div class="col-12">
+                                                        <h6>Notes</h6>
+                                                        <p class="text-muted">{{ lead.notes }}</p>
+                                                    </div>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                <a href="#" class="btn btn-primary">Edit Lead</a>
+                                                <button type="button" class="btn btn-success">Convert to Client</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted py-4">
+                                        <i class="fas fa-inbox fa-2x mb-3"></i>
+                                        <p>No leads assigned to you yet</p>
+                                        <a href="{{ url_for('employee.create_lead') }}" class="btn btn-primary">
+                                            <i class="fas fa-plus me-2"></i>
+                                            Create Your First Lead
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

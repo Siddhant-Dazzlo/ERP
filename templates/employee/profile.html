@@ -1,0 +1,342 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - Employee Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">My Profile</h1>
+                <a href="{{ url_for('employee.edit_profile') }}" class="btn btn-primary">
+                    <i class="fas fa-edit me-2"></i>
+                    Edit Profile
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Profile Information -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="avatar-lg bg-primary rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3">
+                        <span class="text-white fw-bold fs-1">{{ user.name[0]|upper }}</span>
+                    </div>
+                    <h4 class="fw-bold mb-1">{{ user.name }}</h4>
+                    <p class="text-muted mb-3">{{ user.role|title }}</p>
+                    
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-camera me-2"></i>
+                            Change Photo
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-download me-2"></i>
+                            Download CV
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-address-book me-2"></i>
+                        Contact Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Email Address</label>
+                        <div class="fw-bold">{{ user.email }}</div>
+                    </div>
+                    
+                    {% if user.phone %}
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Phone Number</label>
+                        <div class="fw-bold">{{ user.phone }}</div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if user.address %}
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Address</label>
+                        <div class="fw-bold">{{ user.address }}</div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if user.department %}
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Department</label>
+                        <div class="fw-bold">{{ user.department }}</div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Employee ID</label>
+                        <div class="fw-bold">{{ user.id }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Profile Content -->
+        <div class="col-lg-8">
+            <!-- Personal Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-user me-2"></i>
+                        Personal Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Full Name</label>
+                            <div class="fw-bold">{{ user.name }}</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Role</label>
+                            <div class="fw-bold">{{ user.role|title }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Date of Birth</label>
+                            <div class="fw-bold">{{ user.date_of_birth or 'Not specified' }}</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Gender</label>
+                            <div class="fw-bold">{{ user.gender or 'Not specified' }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Nationality</label>
+                            <div class="fw-bold">{{ user.nationality or 'Not specified' }}</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Marital Status</label>
+                            <div class="fw-bold">{{ user.marital_status or 'Not specified' }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Employment Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-briefcase me-2"></i>
+                        Employment Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Employee ID</label>
+                            <div class="fw-bold">{{ user.id }}</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Department</label>
+                            <div class="fw-bold">{{ user.department or 'Not assigned' }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Position</label>
+                            <div class="fw-bold">{{ user.position or 'Not specified' }}</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Hire Date</label>
+                            <div class="fw-bold">{{ user.hire_date or 'Not specified' }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Employment Type</label>
+                            <div class="fw-bold">{{ user.employment_type or 'Full-time' }}</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Work Location</label>
+                            <div class="fw-bold">{{ user.work_location or 'Office' }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Skills and Certifications -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-star me-2"></i>
+                        Skills & Certifications
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="mb-3">Technical Skills</h6>
+                            <div class="mb-2">
+                                <span class="badge bg-primary me-2">JavaScript</span>
+                                <span class="badge bg-primary me-2">Python</span>
+                                <span class="badge bg-primary me-2">React</span>
+                                <span class="badge bg-primary me-2">Node.js</span>
+                                <span class="badge bg-primary me-2">SQL</span>
+                            </div>
+                            
+                            <h6 class="mb-3 mt-4">Soft Skills</h6>
+                            <div class="mb-2">
+                                <span class="badge bg-success me-2">Communication</span>
+                                <span class="badge bg-success me-2">Leadership</span>
+                                <span class="badge bg-success me-2">Problem Solving</span>
+                                <span class="badge bg-success me-2">Teamwork</span>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h6 class="mb-3">Certifications</h6>
+                            <div class="certification-item d-flex align-items-center mb-3">
+                                <div class="certification-icon bg-warning text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 30px; height: 30px;">
+                                    <i class="fas fa-certificate"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold">AWS Certified Developer</div>
+                                    <small class="text-muted">Issued: Jan 2024</small>
+                                </div>
+                            </div>
+                            
+                            <div class="certification-item d-flex align-items-center mb-3">
+                                <div class="certification-icon bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 30px; height: 30px;">
+                                    <i class="fas fa-certificate"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold">Google Cloud Professional</div>
+                                    <small class="text-muted">Issued: Dec 2023</small>
+                                </div>
+                            </div>
+                            
+                            <div class="certification-item d-flex align-items-center">
+                                <div class="certification-icon bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 30px; height: 30px;">
+                                    <i class="fas fa-certificate"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold">PMP Certification</div>
+                                    <small class="text-muted">Issued: Nov 2023</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Emergency Contact -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-phone-alt me-2"></i>
+                        Emergency Contact
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Emergency Contact Name</label>
+                            <div class="fw-bold">{{ user.emergency_contact_name or 'Not specified' }}</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Relationship</label>
+                            <div class="fw-bold">{{ user.emergency_contact_relationship or 'Not specified' }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Emergency Contact Phone</label>
+                            <div class="fw-bold">{{ user.emergency_contact_phone or 'Not specified' }}</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Emergency Contact Email</label>
+                            <div class="fw-bold">{{ user.emergency_contact_email or 'Not specified' }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Statistics -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Profile Completion
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="h2 text-primary mb-1">85%</div>
+                            <small class="text-muted">Profile Complete</small>
+                            <div class="progress mt-2" style="height: 8px;">
+                                <div class="progress-bar bg-primary" style="width: 85%"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="h2 text-success mb-1">92%</div>
+                            <small class="text-muted">Skills Rated</small>
+                            <div class="progress mt-2" style="height: 8px;">
+                                <div class="progress-bar bg-success" style="width: 92%"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="h2 text-warning mb-1">78%</div>
+                            <small class="text-muted">Certifications</small>
+                            <div class="progress mt-2" style="height: 8px;">
+                                <div class="progress-bar bg-warning" style="width: 78%"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="h2 text-info mb-1">95%</div>
+                            <small class="text-muted">Contact Info</small>
+                            <div class="progress mt-2" style="height: 8px;">
+                                <div class="progress-bar bg-info" style="width: 95%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.avatar-lg {
+    width: 120px;
+    height: 120px;
+}
+
+.certification-icon {
+    flex-shrink: 0;
+}
+
+.certification-item {
+    transition: transform 0.2s;
+}
+
+.certification-item:hover {
+    transform: translateX(5px);
+}
+</style>
+{% endblock %}
+

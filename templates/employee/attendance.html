@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}Attendance - Employee Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">Attendance Management</h1>
+                <div class="text-muted">
+                    <i class="fas fa-calendar-alt me-2"></i>
+                    {{ today }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Today's Attendance Status -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-clock me-2"></i>
+                        Today's Status
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if today_attendance %}
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <div class="h4 text-success mb-1">
+                                        <i class="fas fa-sign-in-alt"></i>
+                                    </div>
+                                    <small class="text-muted">Check In</small>
+                                    <div class="fw-bold">{{ today_attendance.check_in or 'Not recorded' }}</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <div class="h4 text-info mb-1">
+                                        <i class="fas fa-sign-out-alt"></i>
+                                    </div>
+                                    <small class="text-muted">Check Out</small>
+                                    <div class="fw-bold">{{ today_attendance.check_out or 'Not recorded' }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if not today_attendance.check_out %}
+                            <div class="mt-3">
+                                <form method="POST" action="{{ url_for('employee.check_out') }}" class="d-inline">
+                                    <div class="input-group">
+                                        <input type="text" name="otp" class="form-control" placeholder="Enter OTP" required>
+                                        <button type="submit" class="btn btn-info">
+                                            <i class="fas fa-sign-out-alt me-2"></i>
+                                            Check Out
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-3">
+                            <div class="h4 text-muted mb-2">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <p class="text-muted">No attendance record for today</p>
+                            <form method="POST" action="{{ url_for('employee.check_in') }}" class="d-inline">
+                                <div class="input-group">
+                                    <input type="text" name="otp" class="form-control" placeholder="Enter OTP" required>
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-sign-in-alt me-2"></i>
+                                        Check In
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Quick Info
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="h4 text-primary mb-1">{{ attendance_history|length }}</div>
+                            <small class="text-muted">Total Records</small>
+                        </div>
+                        <div class="col-6">
+                            <div class="h4 text-success mb-1">
+                                {{ attendance_history|selectattr('check_out')|list|length }}
+                            </div>
+                            <small class="text-muted">Complete Days</small>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="small text-muted">
+                        <p><strong>Note:</strong> Use the daily OTP provided by your manager to check in/out.</p>
+                        <p><strong>Default OTP:</strong> 12345 (for demo purposes)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance History -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-history me-2"></i>
+                        Attendance History
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Check In</th>
+                                    <th>Check Out</th>
+                                    <th>Total Hours</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in attendance_history %}
+                                <tr>
+                                    <td>
+                                        <span class="fw-bold">{{ record.date }}</span>
+                                    </td>
+                                    <td>
+                                        {% if record.check_in %}
+                                            <span class="text-success">{{ record.check_in }}</span>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if record.check_out %}
+                                            <span class="text-info">{{ record.check_out }}</span>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if record.check_in and record.check_out %}
+                                            {% set check_in = record.check_in.split(':') %}
+                                            {% set check_out = record.check_out.split(':') %}
+                                            {% set hours = (check_out[0]|int - check_in[0]|int) %}
+                                            {% set minutes = (check_out[1]|int - check_in[1]|int) %}
+                                            <span class="fw-bold">{{ hours }}h {{ minutes }}m</span>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if record.check_in and record.check_out %}
+                                            <span class="badge bg-success">Complete</span>
+                                        {% elif record.check_in %}
+                                            <span class="badge bg-warning">Checked In</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">No Record</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">
+                                        <i class="fas fa-inbox fa-2x mb-3"></i>
+                                        <p>No attendance records found</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

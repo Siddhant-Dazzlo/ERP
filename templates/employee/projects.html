@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+
+{% block title %}Projects - Employee Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">My Projects</h1>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-primary" id="viewToggle">
+                        <i class="fas fa-th-large me-2"></i>
+                        Toggle View
+                    </button>
+                    <select class="form-select" id="statusFilter" style="width: auto;">
+                        <option value="">All Statuses</option>
+                        <option value="pending">Pending</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                        <option value="on_hold">On Hold</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Total Projects</h6>
+                            <h3 class="mb-0">{{ projects|length }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-project-diagram fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Completed</h6>
+                            <h3 class="mb-0">{{ projects|selectattr('status', 'equalto', 'completed')|list|length }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">In Progress</h6>
+                            <h3 class="mb-0">{{ projects|selectattr('status', 'equalto', 'in_progress')|list|length }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-clock fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Pending</h6>
+                            <h3 class="mb-0">{{ projects|selectattr('status', 'equalto', 'pending')|list|length }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-hourglass-half fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Projects Grid View -->
+    <div class="row" id="gridView">
+        {% for project in projects %}
+        <div class="col-lg-4 col-md-6 mb-4 project-card" 
+             data-status="{{ project.status|lower }}">
+            <div class="card h-100 project-card-inner">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="card-title mb-0">{{ project.name }}</h6>
+                    {% if project.status == 'completed' %}
+                        <span class="badge bg-success">Completed</span>
+                    {% elif project.status == 'in_progress' %}
+                        <span class="badge bg-warning">In Progress</span>
+                    {% elif project.status == 'pending' %}
+                        <span class="badge bg-info">Pending</span>
+                    {% elif project.status == 'on_hold' %}
+                        <span class="badge bg-secondary">On Hold</span>
+                    {% else %}
+                        <span class="badge bg-secondary">{{ project.status|title }}</span>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <small class="text-muted">Project Type</small>
+                        <div class="fw-bold">{{ project.type|title }}</div>
+                    </div>
+                    
+                    {% if project.description %}
+                    <div class="mb-3">
+                        <small class="text-muted">Description</small>
+                        <p class="mb-0 text-truncate">{{ project.description }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <small class="text-muted">Start Date</small>
+                            <div class="fw-bold">{{ project.start_date or 'N/A' }}</div>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">End Date</small>
+                            <div class="fw-bold">{{ project.end_date or 'N/A' }}</div>
+                        </div>
+                    </div>
+                    
+                    {% if project.budget %}
+                    <div class="mb-3">
+                        <small class="text-muted">Budget</small>
+                        <div class="fw-bold text-primary">${{ "{:,.2f}".format(project.budget) }}</div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <small class="text-muted">Client</small>
+                        <div class="fw-bold">{{ project.client_name or 'N/A' }}</div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{{ url_for('employee.project_detail', project_id=project.id) }}" 
+                           class="btn btn-sm btn-primary">
+                            <i class="fas fa-eye me-1"></i>
+                            View Details
+                        </a>
+                        <div class="text-muted">
+                            <small>ID: {{ project.id }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <div class="text-center text-muted py-5">
+                <i class="fas fa-project-diagram fa-3x mb-3"></i>
+                <h4>No Projects Assigned</h4>
+                <p>You haven't been assigned to any projects yet.</p>
+                <p class="text-muted">Contact your manager to get assigned to projects.</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Projects Table View (Hidden by default) -->
+    <div class="row d-none" id="tableView">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        Projects Table View
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Project Name</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Client</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Budget</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for project in projects %}
+                                <tr class="project-row" data-status="{{ project.status|lower }}">
+                                    <td>
+                                        <div class="fw-bold">{{ project.name }}</div>
+                                        <small class="text-muted">ID: {{ project.id }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark">{{ project.type|title }}</span>
+                                    </td>
+                                    <td>
+                                        {% if project.status == 'completed' %}
+                                            <span class="badge bg-success">Completed</span>
+                                        {% elif project.status == 'in_progress' %}
+                                            <span class="badge bg-warning">In Progress</span>
+                                        {% elif project.status == 'pending' %}
+                                            <span class="badge bg-info">Pending</span>
+                                        {% elif project.status == 'on_hold' %}
+                                            <span class="badge bg-secondary">On Hold</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ project.status|title }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ project.client_name or 'N/A' }}</td>
+                                    <td>{{ project.start_date or 'N/A' }}</td>
+                                    <td>{{ project.end_date or 'N/A' }}</td>
+                                    <td>
+                                        {% if project.budget %}
+                                            <span class="fw-bold text-primary">${{ "{:,.2f}".format(project.budget) }}</span>
+                                        {% else %}
+                                            <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('employee.project_detail', project_id=project.id) }}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const viewToggle = document.getElementById('viewToggle');
+    const gridView = document.getElementById('gridView');
+    const tableView = document.getElementById('tableView');
+    const statusFilter = document.getElementById('statusFilter');
+    const projectCards = document.querySelectorAll('.project-card');
+    const projectRows = document.querySelectorAll('.project-row');
+    
+    let isGridView = true;
+    
+    // Toggle between grid and table view
+    viewToggle.addEventListener('click', function() {
+        if (isGridView) {
+            gridView.classList.add('d-none');
+            tableView.classList.remove('d-none');
+            viewToggle.innerHTML = '<i class="fas fa-th me-2"></i>Grid View';
+            isGridView = false;
+        } else {
+            tableView.classList.add('d-none');
+            gridView.classList.remove('d-none');
+            viewToggle.innerHTML = '<i class="fas fa-th-large me-2"></i>Table View';
+            isGridView = true;
+        }
+    });
+    
+    // Filter by status
+    function filterProjects() {
+        const selectedStatus = statusFilter.value.toLowerCase();
+        
+        if (isGridView) {
+            projectCards.forEach(card => {
+                const status = card.dataset.status;
+                if (!selectedStatus || status === selectedStatus) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        } else {
+            projectRows.forEach(row => {
+                const status = row.dataset.status;
+                if (!selectedStatus || status === selectedStatus) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+    }
+    
+    statusFilter.addEventListener('change', filterProjects);
+});
+</script>
+{% endblock %}
+

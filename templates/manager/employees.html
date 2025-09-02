@@ -1,0 +1,317 @@
+{% extends "base.html" %}
+
+{% block title %}Team Management - Manager Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">Team Management</h1>
+                <a href="{{ url_for('manager.create_employee') }}" class="btn btn-primary">
+                    <i class="fas fa-user-plus me-2"></i>
+                    Add Team Member
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Team Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Total Team</h6>
+                            <h3 class="mb-0">{{ employees|length }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-users fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Active</h6>
+                            <h3 class="mb-0">{{ employees|selectattr('status', 'equalto', 'active')|list|length }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Departments</h6>
+                            <h3 class="mb-0">{{ employees|map(attribute='department')|unique|list|length }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-building fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">New This Month</h6>
+                            <h3 class="mb-0">{{ employees|length }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-calendar fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" id="searchInput" placeholder="Search employees...">
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="departmentFilter">
+                                <option value="">All Departments</option>
+                                <option value="development">Development</option>
+                                <option value="design">Design</option>
+                                <option value="marketing">Marketing</option>
+                                <option value="sales">Sales</option>
+                                <option value="support">Support</option>
+                                <option value="hr">HR</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="statusFilter">
+                                <option value="">All Statuses</option>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                                <option value="on_leave">On Leave</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-outline-secondary w-100" id="resetFilters">
+                                <i class="fas fa-refresh me-2"></i>
+                                Reset
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Employees Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        Team Directory
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="employeesTable">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Department</th>
+                                    <th>Position</th>
+                                    <th>Contact</th>
+                                    <th>Status</th>
+                                    <th>Hire Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for employee in employees %}
+                                <tr class="employee-row" 
+                                    data-name="{{ employee.name|lower }}" 
+                                    data-department="{{ employee.department|lower if employee.department else '' }}"
+                                    data-status="{{ employee.status|lower if employee.status else '' }}">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm bg-primary rounded-circle d-flex align-items-center justify-content-center me-3">
+                                                <span class="text-white fw-bold">{{ employee.name[0]|upper }}</span>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold">{{ employee.name }}</div>
+                                                <small class="text-muted">ID: {{ employee.id }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark">{{ employee.department or 'Not assigned' }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold">{{ employee.position or 'Not specified' }}</div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <div>{{ employee.email }}</div>
+                                            <small class="text-muted">{{ employee.phone or 'No phone' }}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if employee.status == 'active' %}
+                                            <span class="badge bg-success">Active</span>
+                                        {% elif employee.status == 'inactive' %}
+                                            <span class="badge bg-secondary">Inactive</span>
+                                        {% elif employee.status == 'on_leave' %}
+                                            <span class="badge bg-warning">On Leave</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ employee.status|title or 'Active' }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ employee.hire_date or 'Not specified' }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#employeeModal{{ employee.id }}">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <a href="{{ url_for('manager.edit_employee', user_id=employee.id) }}" 
+                                               class="btn btn-sm btn-outline-success">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-info">
+                                                <i class="fas fa-chart-line"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Employee Detail Modal -->
+                                <div class="modal fade" id="employeeModal{{ employee.id }}" tabindex="-1">
+                                    <div class="modal-dialog modal-lg">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Employee Details - {{ employee.name }}</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <h6>Personal Information</h6>
+                                                        <p><strong>Name:</strong> {{ employee.name }}</p>
+                                                        <p><strong>Email:</strong> {{ employee.email }}</p>
+                                                        <p><strong>Phone:</strong> {{ employee.phone or 'N/A' }}</p>
+                                                        <p><strong>Department:</strong> {{ employee.department or 'N/A' }}</p>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <h6>Employment Details</h6>
+                                                        <p><strong>Position:</strong> {{ employee.position or 'N/A' }}</p>
+                                                        <p><strong>Status:</strong> 
+                                                            {% if employee.status == 'active' %}
+                                                                <span class="badge bg-success">Active</span>
+                                                            {% elif employee.status == 'inactive' %}
+                                                                <span class="badge bg-secondary">Inactive</span>
+                                                            {% elif employee.status == 'on_leave' %}
+                                                                <span class="badge bg-warning">On Leave</span>
+                                                            {% else %}
+                                                                <span class="badge bg-secondary">{{ employee.status|title or 'Active' }}</span>
+                                                            {% endif %}
+                                                        </p>
+                                                        <p><strong>Hire Date:</strong> {{ employee.hire_date or 'N/A' }}</p>
+                                                        <p><strong>Employee ID:</strong> {{ employee.id }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                <a href="{{ url_for('manager.edit_employee', user_id=employee.id) }}" class="btn btn-primary">Edit Employee</a>
+                                                <button type="button" class="btn btn-success">View Performance</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted py-4">
+                                        <i class="fas fa-inbox fa-2x mb-3"></i>
+                                        <p>No employees found</p>
+                                        <a href="{{ url_for('manager.create_employee') }}" class="btn btn-primary">
+                                            <i class="fas fa-user-plus me-2"></i>
+                                            Add Your First Employee
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Employee filtering functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const departmentFilter = document.getElementById('departmentFilter');
+    const statusFilter = document.getElementById('statusFilter');
+    const resetFilters = document.getElementById('resetFilters');
+    const employeeRows = document.querySelectorAll('.employee-row');
+    
+    function filterEmployees() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const department = departmentFilter.value.toLowerCase();
+        const status = statusFilter.value.toLowerCase();
+        
+        employeeRows.forEach(row => {
+            const name = row.dataset.name;
+            const departmentData = row.dataset.department;
+            const statusData = row.dataset.status;
+            
+            const matchesSearch = name.includes(searchTerm);
+            const matchesDepartment = !department || departmentData === department;
+            const matchesStatus = !status || statusData === status;
+            
+            if (matchesSearch && matchesDepartment && matchesStatus) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+    
+    searchInput.addEventListener('input', filterEmployees);
+    departmentFilter.addEventListener('change', filterEmployees);
+    statusFilter.addEventListener('change', filterEmployees);
+    
+    resetFilters.addEventListener('click', function() {
+        searchInput.value = '';
+        departmentFilter.value = '';
+        statusFilter.value = '';
+        filterEmployees();
+    });
+});
+</script>
+{% endblock %}
+

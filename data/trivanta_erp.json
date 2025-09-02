@@ -1,0 +1,50 @@
+{
+  "users": [
+    {
+      "id": "admin_001",
+      "name": "Siddhant_MD",
+      "email": "admin@trivantaedge.com",
+      "password": "$2b$12$KAn7rjfILk35KVvjzOkUYuQoEuNf2Po7phPa6FZsRwe6XvfF3XfOS",
+      "role": "admin",
+      "department": "Administration",
+      "created_at": "2025-09-02T11:03:17.265239",
+      "status": "active",
+      "api_key": "grWwCx8rQMryw-pfjcWdLhtyNvtGbRh3lu3zmNP_dLE"
+    },
+    {
+      "name": "New",
+      "email": "sidsur23@gmail.com",
+      "password": "$2b$12$Tjiflz6jrIPiUcx49bxoFu571SBiQx1EOznjFneOKIl2nhCqrPlrq",
+      "role": "manager",
+      "department": "Operations",
+      "id": "user_002",
+      "created_at": "2025-09-02T11:03:50.749245",
+      "status": "active",
+      "api_key": "D18IAHMsxC0-VEMh0c_z04todlwG3iQ2o9a86lqta-A"
+    },
+    {
+      "name": "Siddhant suryavanshi",
+      "email": "sidsur70@gmail.com",
+      "password": "$2b$12$p4.A0UTGHjsRBK12h5LEJ.wxg.AknwYFaOB8PkJfP3LTUZi4.ulRa",
+      "role": "employee",
+      "department": "development",
+      "id": "user_003",
+      "created_at": "2025-09-02T11:05:11.312504",
+      "status": "active",
+      "api_key": "AsJOvvYgifBHlwgFRcmbFB8us6Xqp0BrqjDt4pHqmsA"
+    }
+  ],
+  "clients": [],
+  "projects": [],
+  "employees": [],
+  "attendance": [],
+  "leads": [],
+  "tasks": [],
+  "daily_otp": "",
+  "analytics": {
+    "installation_revenue": 0,
+    "manufacturing_revenue": 0,
+    "total_projects": 0,
+    "active_employees": 0
+  }
+}

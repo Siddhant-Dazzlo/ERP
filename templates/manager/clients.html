@@ -1,0 +1,437 @@
+{% extends "base.html" %}
+
+{% block title %}Clients Management - Manager Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="{{ url_for('manager.dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Clients</li>
+                    </ol>
+                </div>
+                <h4 class="page-title">Clients Management</h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="header-title">All Clients</h4>
+                    <a href="{{ url_for('manager.create_client') }}" class="btn btn-primary">
+                        <i class="mdi mdi-plus"></i> Create Client
+                    </a>
+                </div>
+                <div class="card-body">
+                    <!-- Filters -->
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <select class="form-select" id="statusFilter">
+                                <option value="">All Statuses</option>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                                <option value="prospect">Prospect</option>
+                                <option value="lead">Lead</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="businessTypeFilter">
+                                <option value="">All Business Types</option>
+                                <option value="installation">Installation</option>
+                                <option value="manufacturing">Manufacturing</option>
+                                <option value="both">Both</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="priorityFilter">
+                                <option value="">All Priorities</option>
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                                <option value="vip">VIP</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" id="searchInput" placeholder="Search clients...">
+                        </div>
+                    </div>
+
+                    <!-- Clients Table -->
+                    <div class="table-responsive">
+                        <table class="table table-centered table-hover mb-0" id="clientsTable">
+                            <thead>
+                                <tr>
+                                    <th>Client</th>
+                                    <th>Company</th>
+                                    <th>Business Type</th>
+                                    <th>Status</th>
+                                    <th>Priority</th>
+                                    <th>Projects</th>
+                                    <th>Contact Info</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for client in clients %}
+                                <tr data-status="{{ client.status }}" data-business-type="{{ client.business_type }}" data-priority="{{ client.priority }}">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm bg-light rounded-circle me-2">
+                                                <span class="avatar-title text-primary fw-bold">
+                                                    {{ client.name[0]|upper }}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">{{ client.name }}</h6>
+                                                <small class="text-muted">{{ client.email }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <strong>{{ client.company }}</strong>
+                                        {% if client.industry %}
+                                        <br><small class="text-muted">{{ client.industry|replace('_', ' ')|title }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ client.business_type|title }}</span>
+                                    </td>
+                                    <td>
+                                        {% set status_colors = {
+                                            'active': 'bg-success',
+                                            'inactive': 'bg-secondary',
+                                            'prospect': 'bg-warning',
+                                            'lead': 'bg-info'
+                                        } %}
+                                        <span class="badge {{ status_colors.get(client.status, 'bg-secondary') }}">
+                                            {{ client.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% set priority_colors = {
+                                            'low': 'bg-success',
+                                            'medium': 'bg-warning',
+                                            'high': 'bg-orange',
+                                            'vip': 'bg-danger'
+                                        } %}
+                                        <span class="badge {{ priority_colors.get(client.priority, 'bg-secondary') }}">
+                                            {{ client.priority|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% set project_count = client.project_count or 0 %}
+                                        <span class="badge bg-light text-dark">{{ project_count }} Projects</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-column">
+                                            <small><i class="mdi mdi-email text-muted"></i> {{ client.email }}</small>
+                                            {% if client.phone %}
+                                            <small><i class="mdi mdi-phone text-muted"></i> {{ client.phone }}</small>
+                                            {% endif %}
+                                            {% if client.website %}
+                                            <small><i class="mdi mdi-web text-muted"></i> <a href="{{ client.website }}" target="_blank">Website</a></small>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
+                                                Actions
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="#" onclick="viewClient('{{ client.id }}')">
+                                                    <i class="mdi mdi-eye"></i> View Details
+                                                </a></li>
+                                                <li><a class="dropdown-item" href="#" onclick="editClient('{{ client.id }}')">
+                                                    <i class="mdi mdi-pencil"></i> Edit
+                                                </a></li>
+                                                <li><a class="dropdown-item" href="#" onclick="viewProjects('{{ client.id }}')">
+                                                    <i class="mdi mdi-folder-multiple"></i> View Projects
+                                                </a></li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li><a class="dropdown-item text-success" href="#" onclick="createProject('{{ client.id }}')">
+                                                    <i class="mdi mdi-plus-circle"></i> Create Project
+                                                </a></li>
+                                                <li><a class="dropdown-item text-danger" href="#" onclick="deleteClient('{{ client.id }}')">
+                                                    <i class="mdi mdi-delete"></i> Delete
+                                                </a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Empty State -->
+                    {% if not clients %}
+                    <div class="text-center py-5">
+                        <div class="avatar-lg mx-auto mb-3">
+                            <div class="avatar-title bg-light rounded-circle">
+                                <i class="mdi mdi-account-group text-muted" style="font-size: 3rem;"></i>
+                            </div>
+                        </div>
+                        <h4 class="text-muted">No Clients Found</h4>
+                        <p class="text-muted mb-3">Start by creating your first client to manage business relationships.</p>
+                        <a href="{{ url_for('manager.create_client') }}" class="btn btn-primary">
+                            <i class="mdi mdi-plus"></i> Create Your First Client
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Client Details Modal -->
+<div class="modal fade" id="clientDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Client Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="clientDetailsContent">
+                <!-- Content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="editClientFromModal()">Edit Client</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Client Projects Modal -->
+<div class="modal fade" id="clientProjectsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Client Projects</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="clientProjectsContent">
+                <!-- Content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="createProjectFromModal()">Create New Project</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Initialize filters
+    initializeFilters();
+    
+    // Search functionality
+    $('#searchInput').on('keyup', function() {
+        filterClients();
+    });
+});
+
+function initializeFilters() {
+    // Status filter
+    $('#statusFilter').on('change', function() {
+        filterClients();
+    });
+    
+    // Business type filter
+    $('#businessTypeFilter').on('change', function() {
+        filterClients();
+    });
+    
+    // Priority filter
+    $('#priorityFilter').on('change', function() {
+        filterClients();
+    });
+}
+
+function filterClients() {
+    const searchTerm = $('#searchInput').val().toLowerCase();
+    const statusFilter = $('#statusFilter').val();
+    const businessTypeFilter = $('#businessTypeFilter').val();
+    const priorityFilter = $('#priorityFilter').val();
+    
+    $('#clientsTable tbody tr').each(function() {
+        const row = $(this);
+        const status = row.data('status');
+        const businessType = row.data('business-type');
+        const priority = row.data('priority');
+        const text = row.text().toLowerCase();
+        
+        let show = true;
+        
+        // Search filter
+        if (searchTerm && !text.includes(searchTerm)) {
+            show = false;
+        }
+        
+        // Status filter
+        if (statusFilter && status !== statusFilter) {
+            show = false;
+        }
+        
+        // Business type filter
+        if (businessTypeFilter && businessType !== businessTypeFilter) {
+            show = false;
+        }
+        
+        // Priority filter
+        if (priorityFilter && priority !== priorityFilter) {
+            show = false;
+        }
+        
+        row.toggle(show);
+    });
+}
+
+function viewClient(clientId) {
+    // Load client details via AJAX
+    $.get(`/manager/api/clients/${clientId}`, function(data) {
+        if (data.error) {
+            showAlert('Error loading client details', 'error');
+            return;
+        }
+        
+        const client = data;
+        const modalContent = `
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Contact Information</h6>
+                    <p><strong>Name:</strong> ${client.name}</p>
+                    <p><strong>Email:</strong> ${client.email}</p>
+                    <p><strong>Phone:</strong> ${client.phone || 'N/A'}</p>
+                    <p><strong>Company:</strong> ${client.company}</p>
+                </div>
+                <div class="col-md-6">
+                    <h6>Business Details</h6>
+                    <p><strong>Business Type:</strong> ${client.business_type}</p>
+                    <p><strong>Status:</strong> ${client.status}</p>
+                    <p><strong>Priority:</strong> ${client.priority}</p>
+                    <p><strong>Industry:</strong> ${client.industry || 'N/A'}</p>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-12">
+                    <h6>Address</h6>
+                    <p>${client.address || 'No address provided'}</p>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-12">
+                    <h6>Notes</h6>
+                    <p>${client.notes || 'No notes available'}</p>
+                </div>
+            </div>
+        `;
+        
+        $('#clientDetailsContent').html(modalContent);
+        $('#clientDetailsModal').modal('show');
+    });
+}
+
+function editClient(clientId) {
+    // Redirect to edit page or show edit modal
+    window.location.href = `/manager/clients/${clientId}/edit`;
+}
+
+function viewProjects(clientId) {
+    // Load client projects via AJAX
+    $.get(`/manager/api/clients/${clientId}/projects`, function(data) {
+        if (data.error) {
+            showAlert('Error loading client projects', 'error');
+            return;
+        }
+        
+        const clientName = data.client_name;
+        const projects = data.projects;
+        
+        let projectsHtml = '';
+        if (projects && projects.length > 0) {
+            projectsHtml = `
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Project Name</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Budget</th>
+                                <th>Start Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${projects.map(project => `
+                                <tr>
+                                    <td>${project.name}</td>
+                                    <td><span class="badge bg-info">${project.type}</span></td>
+                                    <td><span class="badge bg-secondary">${project.status}</span></td>
+                                    <td>$${project.budget || 0}</td>
+                                    <td>${project.start_date || 'N/A'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        } else {
+            projectsHtml = '<p class="text-muted">No projects found for this client.</p>';
+        }
+        
+        const modalContent = `
+            <h6>Projects for ${clientName}</h6>
+            ${projectsHtml}
+        `;
+        
+        $('#clientProjectsContent').html(modalContent);
+        $('#clientProjectsModal').modal('show');
+    });
+}
+
+function createProject(clientId) {
+    // Redirect to create project page
+    window.location.href = `/manager/projects/create?client_id=${clientId}`;
+}
+
+function deleteClient(clientId) {
+    if (confirm('Are you sure you want to delete this client? This action cannot be undone.')) {
+        // Send delete request
+        $.post(`/manager/clients/${clientId}/delete`, function(response) {
+            if (response.success) {
+                showAlert('Client deleted successfully', 'success');
+                location.reload();
+            } else {
+                showAlert('Error deleting client', 'error');
+            }
+        });
+    }
+}
+
+function editClientFromModal() {
+    // Close modal and redirect to edit
+    $('#clientDetailsModal').modal('hide');
+    // Get client ID from modal and redirect
+    // This would need to be implemented based on how the modal is populated
+}
+
+function createProjectFromModal() {
+    // Close modal and redirect to create project
+    $('#clientProjectsModal').modal('hide');
+    // Get client ID from modal and redirect
+    // This would need to be implemented based on how the modal is populated
+}
+</script>
+{% endblock %}
+

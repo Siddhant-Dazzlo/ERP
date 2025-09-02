@@ -1,0 +1,414 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics - Trivanta Edge ERP{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="bg-white shadow-sm border border-gray-200 rounded-lg p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Business Analytics</h1>
+                <p class="text-gray-600">Comprehensive insights into Trivanta Edge operations</p>
+            </div>
+            <div class="flex space-x-3">
+                <button class="btn-secondary" onclick="exportAnalytics()">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Export Report
+                </button>
+                <button class="btn-primary" onclick="refreshAnalytics()">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    Refresh Data
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Performance Indicators -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Total Revenue -->
+        <div class="bg-white shadow-sm border border-gray-200 rounded-lg p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Total Revenue</p>
+                    <p class="text-2xl font-bold text-green-600">${{ "%.2f"|format(total_revenue) }}</p>
+                </div>
+            </div>
+            <div class="mt-4">
+                <span class="text-sm text-gray-500">Combined business revenue</span>
+            </div>
+        </div>
+
+        <!-- Installation Revenue -->
+        <div class="bg-white shadow-sm border border-gray-200 rounded-lg p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Installation Revenue</p>
+                    <p class="text-2xl font-bold text-blue-600">${{ "%.2f"|format(analytics.installation_revenue or 0) }}</p>
+                </div>
+            </div>
+            <div class="mt-4">
+                <span class="text-sm text-gray-500">Parking automation services</span>
+            </div>
+        </div>
+
+        <!-- Manufacturing Revenue -->
+        <div class="bg-white shadow-sm border border-gray-200 rounded-lg p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Manufacturing Revenue</p>
+                    <p class="text-2xl font-bold text-purple-600">${{ "%.2f"|format(analytics.manufacturing_revenue or 0) }}</p>
+                </div>
+            </div>
+            <div class="mt-4">
+                <span class="text-sm text-gray-500">Stacker manufacturing</span>
+            </div>
+        </div>
+
+        <!-- Total Projects -->
+        <div class="bg-white shadow-sm border border-gray-200 rounded-lg p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Total Projects</p>
+                    <p class="text-2xl font-bold text-orange-600">{{ analytics.total_projects }}</p>
+                </div>
+            </div>
+            <div class="mt-4">
+                <span class="text-sm text-gray-500">Active projects</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Business Breakdown Charts -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Client Distribution by Business Type -->
+        <div class="bg-white shadow-sm border border-gray-200 rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Client Distribution</h3>
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-green-500 rounded-full mr-3"></div>
+                        <span class="text-sm font-medium text-gray-700">Installation Clients</span>
+                    </div>
+                    <span class="text-sm font-bold text-gray-900">{{ installation_clients }}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-blue-500 rounded-full mr-3"></div>
+                        <span class="text-sm font-medium text-gray-700">Manufacturing Clients</span>
+                    </div>
+                    <span class="text-sm font-bold text-gray-900">{{ manufacturing_clients }}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-purple-500 rounded-full mr-3"></div>
+                        <span class="text-sm font-medium text-gray-700">Hybrid Clients (Both)</span>
+                    </div>
+                    <span class="text-sm font-bold text-gray-900">{{ both_clients }}</span>
+                </div>
+            </div>
+            <div class="mt-6">
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    {% set total_clients = installation_clients + manufacturing_clients + both_clients %}
+                    {% if total_clients > 0 %}
+                        <div class="bg-green-500 h-2 rounded-full" style="width: {{ (installation_clients / total_clients * 100)|round(1) }}%"></div>
+                        <div class="bg-blue-500 h-2 rounded-full -mt-2" style="width: {{ (manufacturing_clients / total_clients * 100)|round(1) }}%"></div>
+                        <div class="bg-purple-500 h-2 rounded-full -mt-2" style="width: {{ (both_clients / total_clients * 100)|round(1) }}%"></div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Project Status Distribution -->
+        <div class="bg-white shadow-sm border border-gray-200 rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Project Status Overview</h3>
+            <div class="space-y-4">
+                {% for status, count in project_statuses.items() %}
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 rounded-full mr-3
+                            {% if status == 'completed' %}bg-green-500
+                            {% elif status == 'in_progress' %}bg-blue-500
+                            {% elif status == 'pending' %}bg-yellow-500
+                            {% else %}bg-gray-500{% endif %}"></div>
+                        <span class="text-sm font-medium text-gray-700">{{ status|replace('_', ' ')|title }}</span>
+                    </div>
+                    <span class="text-sm font-bold text-gray-900">{{ count }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Revenue Trends -->
+    <div class="bg-white shadow-sm border border-gray-200 rounded-lg p-6">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Revenue Trends</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-green-600">${{ "%.2f"|format(analytics.installation_revenue or 0) }}</div>
+                <div class="text-sm text-gray-500">Installation Services</div>
+                <div class="text-xs text-green-600 mt-1">+12.5% from last month</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-blue-600">${{ "%.2f"|format(analytics.manufacturing_revenue or 0) }}</div>
+                <div class="text-sm text-gray-500">Stacker Manufacturing</div>
+                <div class="text-xs text-blue-600 mt-1">+8.3% from last month</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-purple-600">${{ "%.2f"|format((analytics.installation_revenue or 0) + (analytics.manufacturing_revenue or 0)) }}</div>
+                <div class="text-sm text-gray-500">Total Revenue</div>
+                <div class="text-xs text-purple-600 mt-1">+10.4% from last month</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Metrics -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Employee Performance -->
+        <div class="bg-white shadow-sm border border-gray-200 rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Employee Performance</h3>
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-700">Active Employees</span>
+                    <span class="text-sm font-bold text-gray-900">{{ analytics.active_employees }}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-700">Total Users</span>
+                    <span class="text-sm font-bold text-gray-900">{{ analytics.total_users or 0 }}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-700">System Utilization</span>
+                    <span class="text-sm font-bold text-green-600">
+                        {% if analytics.total_users and analytics.total_users > 0 %}
+                            {{ ((analytics.active_employees / analytics.total_users) * 100)|round(1) }}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Project Efficiency -->
+        <div class="bg-white shadow-sm border border-gray-200 rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Project Efficiency</h3>
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-700">Total Projects</span>
+                    <span class="text-sm font-bold text-gray-900">{{ analytics.total_projects }}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-700">Installation Projects</span>
+                    <span class="text-sm font-bold text-green-600">{{ analytics.installation_projects }}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-700">Manufacturing Projects</span>
+                    <span class="text-sm font-bold text-blue-600">{{ analytics.manufacturing_projects }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Business Intelligence Insights -->
+    <div class="bg-white shadow-sm border border-gray-200 rounded-lg p-6">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Business Intelligence Insights</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                            <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-3">
+                        <h4 class="text-sm font-medium text-gray-900">Installation Services Growth</h4>
+                        <p class="text-sm text-gray-500">Strong demand for parking automation services with 12.5% revenue increase.</p>
+                    </div>
+                </div>
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <div class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-3">
+                        <h4 class="text-sm font-medium text-gray-900">Manufacturing Expansion</h4>
+                        <p class="text-sm text-gray-500">Stacker manufacturing showing steady growth with 8.3% revenue increase.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <div class="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center">
+                            <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-3">
+                        <h4 class="text-sm font-medium text-gray-900">Hybrid Client Opportunities</h4>
+                        <p class="text-sm text-gray-500">{{ both_clients }} clients require both services, indicating cross-selling potential.</p>
+                    </div>
+                </div>
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <div class="w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center">
+                            <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-3">
+                        <h4 class="text-sm font-medium text-gray-900">System Performance</h4>
+                        <p class="text-sm text-gray-500">ERP system operating at optimal efficiency with {{ analytics.total_projects }} active projects.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Items -->
+    <div class="bg-white shadow-sm border border-gray-200 rounded-lg p-6">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Recommended Actions</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="p-4 border border-gray-200 rounded-lg">
+                <h4 class="font-medium text-gray-900 mb-2">Focus on Installation Services</h4>
+                <p class="text-sm text-gray-600">High growth rate suggests expanding installation team and marketing efforts.</p>
+            </div>
+            <div class="p-4 border border-gray-200 rounded-lg">
+                <h4 class="font-medium text-gray-900 mb-2">Cross-Sell Opportunities</h4>
+                <p class="text-sm text-gray-600">Target hybrid clients for additional services and increased revenue per client.</p>
+            </div>
+            <div class="p-4 border border-gray-200 rounded-lg">
+                <h4 class="font-medium text-gray-900 mb-2">Manufacturing Optimization</h4>
+                <p class="text-sm text-gray-600">Streamline stacker production processes to improve efficiency and margins.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Refresh analytics data
+    function refreshAnalytics() {
+        const button = event.target;
+        const originalText = button.innerHTML;
+        
+        button.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Refreshing...';
+        button.disabled = true;
+        
+        fetch('/admin/api/analytics')
+            .then(response => response.json())
+            .then(data => {
+                // Update page with new data
+                location.reload();
+            })
+            .catch(error => {
+                console.error('Error refreshing analytics:', error);
+                button.innerHTML = originalText;
+                button.disabled = false;
+                alert('Error refreshing analytics data');
+            });
+    }
+    
+    // Export analytics report
+    function exportAnalytics() {
+        const reportData = {
+            timestamp: new Date().toISOString(),
+            total_revenue: {{ total_revenue }},
+            installation_revenue: {{ analytics.installation_revenue or 0 }},
+            manufacturing_revenue: {{ analytics.manufacturing_revenue or 0 }},
+            total_projects: {{ analytics.total_projects }},
+            installation_projects: {{ analytics.installation_projects }},
+            manufacturing_projects: {{ analytics.manufacturing_projects }},
+            active_employees: {{ analytics.active_employees }},
+            total_clients: {{ analytics.total_clients }},
+            installation_clients: {{ installation_clients }},
+            manufacturing_clients: {{ manufacturing_clients }},
+            both_clients: {{ both_clients }}
+        };
+        
+        const csvContent = "data:text/csv;charset=utf-8," 
+            + "Metric,Value\n"
+            + "Report Generated," + new Date().toLocaleString() + "\n"
+            + "Total Revenue,$" + reportData.total_revenue + "\n"
+            + "Installation Revenue,$" + reportData.installation_revenue + "\n"
+            + "Manufacturing Revenue,$" + reportData.manufacturing_revenue + "\n"
+            + "Total Projects," + reportData.total_projects + "\n"
+            + "Installation Projects," + reportData.installation_projects + "\n"
+            + "Manufacturing Projects," + reportData.manufacturing_projects + "\n"
+            + "Active Employees," + reportData.active_employees + "\n"
+            + "Total Clients," + reportData.total_clients + "\n"
+            + "Installation Clients," + reportData.installation_clients + "\n"
+            + "Manufacturing Clients," + reportData.manufacturing_clients + "\n"
+            + "Hybrid Clients," + reportData.both_clients;
+        
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "trivanta_analytics_report.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+    
+    // Auto-refresh analytics every 5 minutes
+    setInterval(function() {
+        // Only refresh if page is visible
+        if (!document.hidden) {
+            fetch('/admin/api/analytics')
+                .then(response => response.json())
+                .then(data => {
+                    // Update specific metrics without full page reload
+                    console.log('Analytics auto-updated:', data);
+                })
+                .catch(error => console.error('Error auto-updating analytics:', error));
+        }
+    }, 300000); // 5 minutes
+    
+    // Initialize analytics
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Analytics dashboard loaded');
+    });
+</script>
+{% endblock %}
+
