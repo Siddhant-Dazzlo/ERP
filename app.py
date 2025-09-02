@@ -89,6 +89,15 @@ def index():
             return redirect(url_for('employee.dashboard'))
     return redirect(url_for('login'))
 
+@app.route('/health')
+def health_check():
+    """Simple health check for Railway"""
+    return jsonify({
+        'status': 'healthy',
+        'message': 'Trivanta Edge ERP is running',
+        'timestamp': datetime.now().isoformat()
+    })
+
 @app.route('/test')
 def test_template():
     """Test route to verify template rendering"""
@@ -276,7 +285,7 @@ def file_upload():
         return jsonify({'error': str(e)}), 400
 
 @app.route('/api/health')
-def health_check():
+def api_health_check():
     return jsonify({
         'status': 'healthy', 
         'system': 'Trivanta Edge ERP',
@@ -342,6 +351,9 @@ def handle_disconnect():
     app.websocket_manager.handle_disconnect()
 
 if __name__ == '__main__':
+    # Get port from environment variable (for Railway) or use default
+    port = int(os.environ.get('PORT', 8080))
+    
     # Run the application with WebSocket support
     socketio = websocket_manager.socketio
-    socketio.run(app, debug=True, host='127.0.0.1', port=8080)
+    socketio.run(app, debug=False, host='0.0.0.0', port=port)
