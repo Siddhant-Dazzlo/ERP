@@ -77,6 +77,16 @@ def create_app(config_name='default'):
 # Create application instance
 app = create_app()
 
+# Add startup delay for Railway
+@app.before_request
+def startup_delay():
+    """Add a small delay for Railway to properly initialize"""
+    if not hasattr(app, '_startup_completed'):
+        import time
+        time.sleep(2)
+        app._startup_completed = True
+        print("✅ App startup delay completed")
+
 @app.route('/')
 def index():
     if 'user_id' in session:
@@ -92,11 +102,32 @@ def index():
 @app.route('/health')
 def health_check():
     """Simple health check for Railway"""
-    return jsonify({
-        'status': 'healthy',
-        'message': 'Trivanta Edge ERP is running',
-        'timestamp': datetime.now().isoformat()
-    })
+    try:
+        # Basic system check
+        status = "healthy"
+        message = "Trivanta Edge ERP is running"
+        
+        # Check if data manager is working
+        if hasattr(app, 'data_manager') and app.data_manager:
+            data_status = "Data manager: OK"
+        else:
+            data_status = "Data manager: Not available"
+            status = "degraded"
+        
+        return jsonify({
+            'status': status,
+            'message': message,
+            'data_status': data_status,
+            'timestamp': datetime.now().isoformat(),
+            'railway_ready': True
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': f'Health check failed: {str(e)}',
+            'timestamp': datetime.now().isoformat(),
+            'railway_ready': False
+        }), 500
 
 @app.route('/test')
 def test_template():
@@ -351,9 +382,26 @@ def handle_disconnect():
     app.websocket_manager.handle_disconnect()
 
 if __name__ == '__main__':
-    # Get port from environment variable (for Railway) or use default
-    port = int(os.environ.get('PORT', 8080))
-    
-    # Run the application with WebSocket support
-    socketio = websocket_manager.socketio
-    socketio.run(app, debug=False, host='0.0.0.0', port=port)
+    try:
+        # Get port from environment variable (for Railway) or use default
+        port = int(os.environ.get('PORT', 8080))
+        print(f"🚀 Starting Trivanta Edge ERP on port {port}")
+        
+        # Initialize components with error handling
+        print("📋 Initializing WebSocket manager...")
+        socketio = websocket_manager.socketio
+        
+        print("📋 Starting Flask app...")
+        socketio.run(app, debug=False, host='0.0.0.0', port=port, allow_unsafe_werkzeug=True)
+        
+    except Exception as e:
+        print(f"❌ Failed to start app: {e}")
+        import traceback
+        traceback.print_exc()
+        # Fallback: start without WebSocket
+        try:
+            print("🔄 Attempting fallback startup...")
+            app.run(debug=False, host='0.0.0.0', port=port)
+        except Exception as fallback_error:
+            print(f"❌ Fallback also failed: {fallback_error}")
+            traceback.print_exc()

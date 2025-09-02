@@ -4,12 +4,12 @@
       "id": "admin_001",
       "name": "Siddhant_MD",
       "email": "admin@trivantaedge.com",
-      "password": "$2b$12$N1WYjZO/6f/ErbmSRJJBD.gg/Jk92JfQgdTw4354ma9k3Tz25LOwS",
+      "password": "$2b$12$1moNYlUdvoGKq27WyCBu6uVZp0QPD.Pm1LDbYevsCgQZUsJvgHq3e",
       "role": "admin",
       "department": "Administration",
-      "created_at": "2025-09-02T11:24:25.305741",
+      "created_at": "2025-09-02T11:36:08.713719",
       "status": "active",
-      "api_key": "65SQLDiZsHEsxw9ZWWRt8X_UMC_NB5fE5tqxEr9q65c"
+      "api_key": "1p5mKr5jYmS_yq2m71Bcjp1m0DEBiu6wGuu_GSkQyC8"
     }
   ],
   "clients": [],
