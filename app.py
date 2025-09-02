@@ -77,6 +77,16 @@ def create_app(config_name='default'):
 # Create application instance
 app = create_app()
 
+# Initialize Railway data if needed
+if os.environ.get('RAILWAY_ENVIRONMENT'):
+    try:
+        print("🚀 Running on Railway - initializing data...")
+        from initialize_railway_data import create_railway_data
+        create_railway_data()
+        print("✅ Railway data initialization completed")
+    except Exception as e:
+        print(f"⚠️ Railway data initialization failed: {e}")
+
 # Add startup delay for Railway
 @app.before_request
 def startup_delay():

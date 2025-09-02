@@ -44,6 +44,9 @@ git push -u origin main
 In Railway dashboard, go to your project → Variables tab and add:
 
 ```env
+# Railway Environment
+RAILWAY_ENVIRONMENT=production
+
 # Firebase Configuration
 FIREBASE_PROJECT_ID=trivanta-erp
 FIREBASE_STORAGE_BUCKET=trivanta-erp.appspot.com

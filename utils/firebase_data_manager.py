@@ -18,7 +18,15 @@ class FirebaseDataManager:
     
     def __init__(self):
         self.use_local_storage = True  # Fallback to local storage for now
-        self.data_file = 'data/trivanta_erp.json'
+        
+        # Use absolute path for Railway deployment
+        if os.environ.get('RAILWAY_ENVIRONMENT'):
+            # Running on Railway
+            self.data_file = '/app/data/trivanta_erp.json'
+        else:
+            # Running locally
+            self.data_file = 'data/trivanta_erp.json'
+            
         self.data = {}
         self.ensure_data_directory()
         self.load_data()
