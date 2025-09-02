@@ -4,7 +4,7 @@
       "id": "admin_001",
       "name": "Siddhant_MD",
       "email": "admin@trivantaedge.com",
-      "password": "$2b$12$KAn7rjfILk35KVvjzOkUYuQoEuNf2Po7phPa6FZsRwe6XvfF3XfOS",
+      "password": "$2b$12$15PWA4cxBaYzcv3qBy5LXeH.8/bpMTp6tNCN4zdjV9/DQRDsc40sq",
       "role": "admin",
       "department": "Administration",
       "created_at": "2025-09-02T11:46:09.642759",
@@ -14,7 +14,7 @@
     {
       "name": "New",
       "email": "sidsur23@gmail.com",
-      "password": "$2b$12$Tjiflz6jrIPiUcx49bxoFu571SBiQx1EOznjFneOKIl2nhCqrPlrq",
+      "password": "$2b$12$XleQ6gIscvVM9QQ5jw9lieovNdbEztzt20FzqgjRV5QFbSd7j8Amq",
       "role": "manager",
       "department": "Operations",
       "id": "user_002",
@@ -25,7 +25,7 @@
     {
       "name": "Siddhant suryavanshi",
       "email": "sidsur70@gmail.com",
-      "password": "$2b$12$p4.A0UTGHjsRBK12h5LEJ.wxg.AknwYFaOB8PkJfP3LTUZi4.ulRa",
+      "password": "$2b$12$IMhFJ1D5esHICEVwwEP/NOJtf577GKIRGYvV3DkMzoVU4rAbQS61m",
       "role": "employee",
       "department": "development",
       "id": "user_003",
