@@ -150,15 +150,7 @@ def login():
         email = request.form.get('email')
         password = request.form.get('password')
         
-        # Check for admin login
-        if email == 'admin@trivantaedge.com' and password == 'As@102005':
-            session['user_id'] = 'admin_001'
-            session['role'] = 'admin'
-            session['name'] = 'Siddhant_MD'
-            session.permanent = True
-            return redirect(url_for('admin.dashboard'))
-        
-        # Check manager/employee credentials with enhanced security
+        # Check all user credentials with enhanced security
         user = app.data_manager.authenticate_user(email, password)
         if user:
             # Check if 2FA is required
